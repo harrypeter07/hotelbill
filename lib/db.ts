@@ -19,6 +19,12 @@ export async function getDb(): Promise<Database> {
       name TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'empty'
     );
+    CREATE TABLE IF NOT EXISTS items (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      price REAL NOT NULL,
+      category TEXT
+    );
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       table_id TEXT NOT NULL,

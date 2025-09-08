@@ -16,6 +16,10 @@ export default function Manage() {
   const [tableName, setTableName] = useState('');
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const [itemCategory, setItemCategory] = useState('');
+  const [editItemId, setEditItemId] = useState<string | null>(null);
+  const [editTableId, setEditTableId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   const filteredItems = useMemo(
@@ -30,8 +34,17 @@ export default function Manage() {
         <Text style={styles.heading}>Tables</Text>
         <View style={styles.row}>
           <TextInput placeholder="Table name (e.g., T7)" value={tableName} onChangeText={setTableName} style={styles.input} />
-          <Pressable style={styles.primary} onPress={() => { if (tableName.trim()) { addOrUpdateTable({ name: tableName.trim() }); setTableName(''); } }}>
-            <Text style={styles.primaryText}>Add</Text>
+          <Pressable
+            style={styles.primary}
+            onPress={() => {
+              const name = tableName.trim();
+              if (!name) return;
+              addOrUpdateTable({ id: editTableId ?? undefined, name });
+              setTableName('');
+              setEditTableId(null);
+            }}
+          >
+            <Text style={styles.primaryText}>{editTableId ? 'Update' : 'Add'}</Text>
           </Pressable>
         </View>
         <FlatList
@@ -41,7 +54,10 @@ export default function Manage() {
           renderItem={({ item }) => (
             <View style={styles.listRow}>
               <Text style={styles.listTitle}>{item.name}</Text>
-              <Pressable style={styles.danger} onPress={() => removeTable(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable style={styles.secondary} onPress={() => { setTableName(item.name); setEditTableId(item.id); }}><Text style={styles.secondaryText}>Edit</Text></Pressable>
+                <Pressable style={styles.danger} onPress={() => removeTable(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
+              </View>
             </View>
           )}
         />
@@ -55,17 +71,23 @@ export default function Manage() {
         <View style={styles.row}>
           <TextInput placeholder="Item name" value={itemName} onChangeText={setItemName} style={styles.input} />
           <TextInput placeholder="Price" value={itemPrice} onChangeText={setItemPrice} keyboardType="numeric" style={styles.input} />
+          <TextInput placeholder="Category (e.g., Main, Breads)" value={itemCategory} onChangeText={setItemCategory} style={styles.input} />
           <Pressable style={styles.primary} onPress={() => {
-            const price = Number(itemPrice);
-            if (itemName.trim() && !Number.isNaN(price)) {
-              addOrUpdateItem({ name: itemName.trim(), price });
-              setItemName('');
-              setItemPrice('');
-            }
+            setError(null);
+            const name = itemName.trim();
+            const priceNum = Number(itemPrice);
+            if (!name) { setError('Item name is required'); return; }
+            if (Number.isNaN(priceNum) || priceNum <= 0) { setError('Valid price required'); return; }
+            addOrUpdateItem({ id: editItemId ?? undefined, name, price: priceNum, category: itemCategory.trim() || undefined });
+            setItemName('');
+            setItemPrice('');
+            setItemCategory('');
+            setEditItemId(null);
           }}>
-            <Text style={styles.primaryText}>Save</Text>
+            <Text style={styles.primaryText}>{editItemId ? 'Update' : 'Save'}</Text>
           </Pressable>
         </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
         <FlatList
           data={filteredItems}
           keyExtractor={(i) => i.id}
@@ -76,10 +98,13 @@ export default function Manage() {
                 <Image source={{ uri: getItemImageUri(item.name) }} style={{ width: 48, height: 48, borderRadius: 8 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle}>{item.name}</Text>
-                  <Text>₹{item.price}</Text>
+                  <Text>₹{item.price}{item.category ? ` • ${item.category}` : ''}</Text>
                 </View>
               </View>
-              <Pressable style={styles.danger} onPress={() => removeItem(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Pressable style={styles.secondary} onPress={() => { setEditItemId(item.id); setItemName(item.name); setItemPrice(String(item.price)); setItemCategory(item.category ?? ''); }}><Text style={styles.secondaryText}>Edit</Text></Pressable>
+                <Pressable style={styles.danger} onPress={() => removeItem(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
+              </View>
             </View>
           )}
         />
@@ -95,12 +120,15 @@ const styles = StyleSheet.create({
   input: { flex: 1, backgroundColor: 'white', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
   primary: { backgroundColor: '#111827', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8 },
   primaryText: { color: 'white', fontWeight: '600' },
+  secondary: { backgroundColor: 'white', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb' },
+  secondaryText: { color: '#111827', fontWeight: '700' },
   danger: { backgroundColor: '#fee2e2', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
   dangerText: { color: '#991b1b', fontWeight: '700' },
   listRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, backgroundColor: 'white' },
   listTitle: { fontWeight: '700' },
   card: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, backgroundColor: 'white' },
   cardTitle: { fontWeight: '700' },
+  error: { color: '#b91c1c', fontWeight: '600' },
 });
 
 
