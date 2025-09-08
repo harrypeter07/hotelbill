@@ -23,11 +23,15 @@ export default function TabsLayout() {
   const analyticsIcon = useCallback(({ color, size }: { color: string; size: number }) => (
     <Ionicons name="stats-chart" size={size} color={color} />
   ), []);
+  const manageIcon = useCallback(({ color, size }: { color: string; size: number }) => (
+    <Ionicons name="construct" size={size} color={color} />
+  ), []);
 
   const homeOptions = useMemo(() => ({ title: 'Home', tabBarIcon: homeIcon }), [homeIcon]);
   const duesOptions = useMemo(() => ({ title: 'Dues', tabBarIcon: duesIcon }), [duesIcon]);
   const historyOptions = useMemo(() => ({ title: 'History', tabBarIcon: historyIcon }), [historyIcon]);
   const analyticsOptions = useMemo(() => ({ title: 'Analytics', tabBarIcon: analyticsIcon }), [analyticsIcon]);
+  const manageOptions = useMemo(() => ({ title: 'Manage', tabBarIcon: manageIcon }), [manageIcon]);
 
   return (
     <Tabs screenOptions={screenOptions}>
@@ -35,6 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="dues" options={duesOptions} />
       <Tabs.Screen name="history" options={historyOptions} />
       <Tabs.Screen name="analytics" options={analyticsOptions} />
+      <Tabs.Screen name="manage" options={manageOptions} />
     </Tabs>
   );
 }
