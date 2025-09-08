@@ -2,7 +2,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useMemo } from 'react';
 import { useOrderStore } from '@/store/order';
 import { useCatalogStore } from '@/store/catalog';
-import { Svg, Rect } from 'react-native-svg';
 import NavBar from '@/components/NavBar';
 
 export default function Analytics() {
@@ -27,22 +26,22 @@ export default function Analytics() {
   }, [orders]);
 
   const maxVal = Math.max(1, ...dailyTotals.map((d) => d.total));
-  const chartWidth = 320;
   const chartHeight = 120;
-  const barWidth = Math.floor(chartWidth / dailyTotals.length) - 8;
 
   return (
     <View style={styles.container}>
       <NavBar title="Analytics" />
       <Text style={styles.title}>Sales (last 7 days)</Text>
-      <Svg width={chartWidth} height={chartHeight} style={{ backgroundColor: '#f3f4f6', borderRadius: 12 }}>
-        {dailyTotals.map((d, i) => {
-          const h = Math.round((d.total / maxVal) * (chartHeight - 16));
-          const x = i * (barWidth + 8) + 12;
-          const y = chartHeight - h - 8;
-          return <Rect key={d.key} x={x} y={y} width={barWidth} height={h} fill="#111827" rx={6} ry={6} />;
-        })}
-      </Svg>
+      <View style={{ height: chartHeight, backgroundColor: '#f3f4f6', borderRadius: 12, paddingHorizontal: 12, paddingTop: 8 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          {dailyTotals.map((d) => {
+            const h = Math.round((d.total / maxVal) * (chartHeight - 16));
+            return (
+              <View key={d.key} style={{ width: 24, height: h, backgroundColor: '#111827', borderRadius: 6 }} />
+            );
+          })}
+        </View>
+      </View>
       <View style={{ height: 16 }} />
       <Text style={styles.subtitle}>Totals</Text>
       <Text>Today: ₹{dailyTotals[6].total.toFixed(2)}</Text>
