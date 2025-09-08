@@ -3,6 +3,7 @@ import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { useCatalogStore } from '@/store/catalog';
+import { View, ActivityIndicator } from 'react-native';
 
 export default function App() {
   const hydrated = useCatalogStore((s) => s.hydrated);
@@ -10,7 +11,13 @@ export default function App() {
   useEffect(() => { void hydrate(); }, [hydrate]);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {hydrated ? <Slot /> : null}
+      {hydrated ? (
+        <Slot />
+      ) : (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }
