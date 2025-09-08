@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
+import NavBar from '@/components/NavBar';
 
 export default function Analytics() {
   return (
     <View style={styles.container}>
+      <NavBar title="Analytics" />
       <Text style={styles.title}>Analytics</Text>
       <Text>Daily Sales: ₹12,340</Text>
       <Text>Weekly Sales: ₹84,120</Text>

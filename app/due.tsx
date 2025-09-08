@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import NavBar from '@/components/NavBar';
+import { useDuesStore } from '@/store/dues';
 
 export default function DuePayment() {
   const [name, setName] = useState('');
@@ -15,8 +17,16 @@ export default function DuePayment() {
     if (!res.canceled) setPhotoUri(res.assets[0].uri);
   };
 
+  const addDue = useDuesStore((s) => s.addDue);
+
+  const onSave = () => {
+    addDue({ name, phone, amount: 0, table: undefined, photoUri });
+    router.replace('/(tabs)/dues');
+  };
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
+      <NavBar title="Due Payment" />
       <Text style={styles.title}>Due Payment</Text>
       <TextInput placeholder="Customer Name" value={name} onChangeText={setName} style={styles.input} />
       <TextInput placeholder="Phone" value={phone} onChangeText={setPhone} style={styles.input} keyboardType="phone-pad" />
@@ -24,7 +34,7 @@ export default function DuePayment() {
       <View style={{ height: 12 }} />
       <Pressable style={styles.secondary} onPress={capturePhoto}><Text style={styles.secondaryText}>Capture Photo</Text></Pressable>
       <View style={{ height: 12 }} />
-      <Pressable style={styles.primary} onPress={() => router.replace('/home')}><Text style={styles.primaryText}>Save as Due</Text></Pressable>
+      <Pressable style={styles.primary} onPress={onSave}><Text style={styles.primaryText}>Save as Due</Text></Pressable>
     </View>
   );
 }

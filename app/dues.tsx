@@ -1,18 +1,20 @@
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
+import NavBar from '@/components/NavBar';
+import { useDuesStore } from '@/store/dues';
 
 type Due = { id: string; name?: string; phone?: string; amount: number; table?: string; date: string; photoUri?: string };
 
-const MOCK_DUES: Due[] = [
-  { id: '1', name: 'Rahul', phone: '99999 11111', amount: 420, table: 'T2', date: new Date().toLocaleDateString() },
-  { id: '2', name: 'Priya', phone: '88888 22222', amount: 250, table: 'T4', date: new Date().toLocaleDateString() },
-];
+const MOCK_DUES: Due[] = [];
 
 export default function DuesDashboard() {
+  const dues = useDuesStore((s) => s.dues.filter((d) => !d.paid));
+  const markPaid = useDuesStore((s) => s.markPaid);
   return (
     <View style={{ flex: 1 }}>
+      <NavBar title="Dues" />
       <Text style={styles.heading}>Dues</Text>
       <FlatList
-        data={MOCK_DUES}
+        data={dues}
         keyExtractor={(d) => d.id}
         contentContainerStyle={{ padding: 16, gap: 12 }}
         renderItem={({ item }) => (
@@ -21,7 +23,7 @@ export default function DuesDashboard() {
             <Text>{item.phone || '-'}</Text>
             <Text>{item.table} • {item.date}</Text>
             <Text style={styles.amount}>₹{item.amount}</Text>
-            <Pressable style={styles.primary}><Text style={styles.primaryText}>Mark as Paid</Text></Pressable>
+            <Pressable style={styles.primary} onPress={() => markPaid(item.id)}><Text style={styles.primaryText}>Mark as Paid</Text></Pressable>
           </View>
         )}
       />

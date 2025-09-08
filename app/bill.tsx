@@ -1,30 +1,43 @@
 import { useLocalSearchParams, router } from 'expo-router';
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput } from 'react-native';
-import { useMemo, useState } from 'react';
-
-type Item = { id: string; name: string; price: number; quantity: number };
+import { useEffect, useMemo, useState } from 'react';
+import { useOrderStore } from '@/store/order';
+import NavBar from '@/components/NavBar';
 
 export default function Bill() {
-  const { items } = useLocalSearchParams<{ items?: string }>();
-  const parsed: Item[] = useMemo(() => (items ? JSON.parse(items) : []), [items]);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const tableId = String(id);
+  const tableOrder = useOrderStore((s) => s.orders[tableId]);
+  const setAdj = useOrderStore((s) => s.setBillAdjustments);
+  const clear = useOrderStore((s) => s.clearTable);
+
+  const lines = useMemo(() => (tableOrder ? Object.values(tableOrder.lines) : []), [tableOrder]);
+
   const [taxPct, setTaxPct] = useState('5');
   const [discountPct, setDiscountPct] = useState('0');
 
-  const subtotal = parsed.reduce((s, it) => s + it.price * it.quantity, 0);
-  const tax = (subtotal * (Number(taxPct) || 0)) / 100;
-  const discount = (subtotal * (Number(discountPct) || 0)) / 100;
-  const total = Math.max(0, subtotal + tax - discount);
+  useEffect(() => {
+    setAdj(tableId, Number(taxPct) || 0, Number(discountPct) || 0);
+  }, [tableId, taxPct, discountPct, setAdj]);
+
+  const { subtotal, tax, discount, total } = useMemo(() => {
+    const sb = lines.reduce((s, it) => s + it.price * it.quantity, 0);
+    const t = (sb * (Number(taxPct) || 0)) / 100;
+    const d = (sb * (Number(discountPct) || 0)) / 100;
+    return { subtotal: sb, tax: t, discount: d, total: Math.max(0, sb + t - d) };
+  }, [lines, taxPct, discountPct]);
 
   return (
     <View style={{ flex: 1 }}>
+      <NavBar title="Bill" />
       <Text style={styles.heading}>Bill</Text>
       <FlatList
-        data={parsed}
+        data={lines}
         keyExtractor={(i) => i.id}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={{ flex: 1 }}>{item.name} x {item.quantity}</Text>
-            <Text>₹{item.price * item.quantity}</Text>
+            <Text>₹{(item.price * item.quantity).toFixed(2)}</Text>
           </View>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
@@ -36,7 +49,7 @@ export default function Bill() {
         <View style={styles.row}><Text>Discount %</Text><TextInput style={styles.input} keyboardType="numeric" value={discountPct} onChangeText={setDiscountPct} /></View>
         <View style={styles.row}><Text style={styles.total}>Total</Text><Text style={styles.total}>₹{total.toFixed(2)}</Text></View>
 
-        <Pressable style={styles.primary} onPress={() => router.replace('/home')}>
+        <Pressable style={styles.primary} onPress={() => { clear(tableId); router.replace('/(tabs)/home'); }}>
           <Text style={styles.primaryText}>Paid</Text>
         </Pressable>
         <Pressable style={styles.secondary} onPress={() => router.push('/due')}>

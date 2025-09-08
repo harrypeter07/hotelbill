@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
+import NavBar from '@/components/NavBar';
 
 type HistoryItem = { id: string; table: string; waiter: string; date: string; total: number; status: 'paid' | 'due_paid' };
 
@@ -10,6 +11,7 @@ const MOCK_HISTORY: HistoryItem[] = [
 export default function History() {
   return (
     <View style={{ flex: 1 }}>
+      <NavBar title="History" />
       <Text style={styles.heading}>Order & Sales History</Text>
       <FlatList
         data={MOCK_HISTORY}
