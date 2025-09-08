@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useMemo } from 'react';
 import { useOrderStore } from '@/store/order';
+import { useCatalogStore } from '@/store/catalog';
 import { Svg, Rect } from 'react-native-svg';
 import NavBar from '@/components/NavBar';
 
 export default function Analytics() {
   const orders = useOrderStore((s) => s.orders);
+  const items = useCatalogStore((s) => s.items);
   const dailyTotals = useMemo(() => {
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
@@ -45,6 +47,46 @@ export default function Analytics() {
       <Text style={styles.subtitle}>Totals</Text>
       <Text>Today: ₹{dailyTotals[6].total.toFixed(2)}</Text>
       <Text>Max Day: ₹{maxVal.toFixed(2)}</Text>
+
+      <View style={{ height: 16 }} />
+      <Text style={styles.title}>By Category (today)</Text>
+      {(() => {
+        const catTotals = new Map<string, number>();
+        Object.values(orders).forEach((t) => {
+          Object.values(t.lines).forEach((l) => {
+            const cat = items.find((i) => i.id === l.id)?.category ?? 'Other';
+            catTotals.set(cat, (catTotals.get(cat) || 0) + l.price * l.quantity);
+          });
+        });
+        const rows = Array.from(catTotals.entries()).sort((a, b) => b[1] - a[1]);
+        return rows.map(([cat, total]) => (
+          <View key={cat} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text>{cat}</Text>
+            <Text>₹{total.toFixed(2)}</Text>
+          </View>
+        ));
+      })()}
+
+      <View style={{ height: 16 }} />
+      <Text style={styles.title}>Top Items (today)</Text>
+      {(() => {
+        const map = new Map<string, { name: string; total: number }>();
+        Object.values(orders).forEach((t) => {
+          Object.values(t.lines).forEach((l) => {
+            const prev = map.get(l.id)?.total || 0;
+            map.set(l.id, { name: l.name, total: prev + l.price * l.quantity });
+          });
+        });
+        return Array.from(map.values())
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 5)
+          .map((r) => (
+            <View key={r.name} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text>{r.name}</Text>
+              <Text>₹{r.total.toFixed(2)}</Text>
+            </View>
+          ));
+      })()}
     </View>
   );
 }
