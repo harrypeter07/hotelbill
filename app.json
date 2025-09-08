@@ -17,10 +17,19 @@
       "**/*"
     ],
     "plugins": [
-      ["expo-local-authentication"],
-      ["expo-camera"],
-      ["expo-secure-store"],
-      ["expo-sqlite"]
+      [
+        "expo-local-authentication"
+      ],
+      [
+        "expo-camera"
+      ],
+      [
+        "expo-secure-store"
+      ],
+      [
+        "expo-sqlite"
+      ],
+      "expo-router"
     ],
     "ios": {
       "supportsTablet": true
@@ -32,7 +41,11 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.billbuddy.hotelwaiter",
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"]
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
