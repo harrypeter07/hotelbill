@@ -2,16 +2,26 @@
   "expo": {
     "name": "hotel-waiter",
     "slug": "hotel-waiter",
+    "scheme": "hotelwaiter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      ["expo-local-authentication"],
+      ["expo-camera"],
+      ["expo-secure-store"],
+      ["expo-sqlite"]
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -20,9 +30,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.billbuddy.hotelwaiter",
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"]
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
     }
   }
