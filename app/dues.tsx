@@ -1,13 +1,16 @@
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
+import { useMemo } from 'react';
+
 
 type Due = { id: string; name?: string; phone?: string; amount: number; table?: string; date: string; photoUri?: string };
 
 const MOCK_DUES: Due[] = [];
 
 export default function DuesDashboard() {
-  const dues = useDuesStore((s) => s.dues.filter((d) => !d.paid));
+  const allDues = useDuesStore((s) => s.dues);
+  const dues = useMemo(() => allDues.filter((d) => !d.paid), [allDues]);
   const markPaid = useDuesStore((s) => s.markPaid);
   return (
     <View style={{ flex: 1 }}>
