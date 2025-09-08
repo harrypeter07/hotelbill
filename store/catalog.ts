@@ -24,45 +24,50 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   items: [],
   hydrated: false,
   hydrate: async () => {
-    const db = await getDb();
-    const tables = await db.getAllAsync<TableInfo>('SELECT id, name FROM tables ORDER BY name');
-    const items = await db.getAllAsync<CatalogItem>('SELECT id, name, price, category FROM items ORDER BY name');
-    // Seed defaults if empty
-    if (tables.length === 0) {
-      const defaults = ['T1','T2','T3'].map((n, i) => ({ id: String(i+1), name: n }));
-      const tx = await db.execAsync('BEGIN');
-      try {
-        for (const t of defaults) {
-          await db.runAsync('INSERT OR REPLACE INTO tables (id, name, status) VALUES (?, ?, ?)', [t.id, t.name, 'empty']);
+    try {
+      const db = await getDb();
+      const tables = await db.getAllAsync<TableInfo>('SELECT id, name FROM tables ORDER BY name');
+      const items = await db.getAllAsync<CatalogItem>('SELECT id, name, price, category FROM items ORDER BY name');
+      // Seed defaults if empty
+      if (tables.length === 0) {
+        const defaults = ['T1','T2','T3'].map((n, i) => ({ id: String(i+1), name: n }));
+        await db.runAsync('BEGIN');
+        try {
+          for (const t of defaults) {
+            await db.runAsync('INSERT OR REPLACE INTO tables (id, name, status) VALUES (?, ?, ?)', [t.id, t.name, 'empty']);
+          }
+          await db.runAsync('COMMIT');
+        } catch (e) {
+          await db.runAsync('ROLLBACK');
         }
-        await db.execAsync('COMMIT');
-      } catch (e) {
-        await db.execAsync('ROLLBACK');
+        set({ tables: defaults });
+      } else {
+        set({ tables });
       }
-      set({ tables: defaults });
-    } else {
-      set({ tables });
-    }
-    if (items.length === 0) {
-      const defaults: CatalogItem[] = [
-        { id: 'chapati', name: 'Chapati', price: 15, category: 'Breads' },
-        { id: 'dal', name: 'Dal', price: 60, category: 'Main' },
-        { id: 'paneer', name: 'Paneer', price: 180, category: 'Main' },
-      ];
-      const tx2 = await db.execAsync('BEGIN');
-      try {
-        for (const i of defaults) {
-          await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, category) VALUES (?, ?, ?, ?)', [i.id, i.name, i.price, i.category ?? null]);
+      if (items.length === 0) {
+        const defaults: CatalogItem[] = [
+          { id: 'chapati', name: 'Chapati', price: 15, category: 'Breads' },
+          { id: 'dal', name: 'Dal', price: 60, category: 'Main' },
+          { id: 'paneer', name: 'Paneer', price: 180, category: 'Main' },
+        ];
+        await db.runAsync('BEGIN');
+        try {
+          for (const i of defaults) {
+            await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, category) VALUES (?, ?, ?, ?)', [i.id, i.name, i.price, i.category ?? null]);
+          }
+          await db.runAsync('COMMIT');
+        } catch (e) {
+          await db.runAsync('ROLLBACK');
         }
-        await db.execAsync('COMMIT');
-      } catch (e) {
-        await db.execAsync('ROLLBACK');
+        set({ items: defaults });
+      } else {
+        set({ items });
       }
-      set({ items: defaults });
-    } else {
-      set({ items });
+    } catch (e) {
+      // In case of any unexpected error, still allow app to render
+    } finally {
+      set({ hydrated: true });
     }
-    set({ hydrated: true });
   },
   addOrUpdateTable: (table) =>
     set(async (s) => {
