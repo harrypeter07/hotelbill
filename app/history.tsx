@@ -1,27 +1,31 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
-
-type HistoryItem = { id: string; table: string; waiter: string; date: string; total: number; status: 'paid' | 'due_paid' };
-
-const MOCK_HISTORY: HistoryItem[] = [
-  { id: 'h1', table: 'T1', waiter: 'Aman', date: new Date().toLocaleDateString(), total: 580, status: 'paid' },
-  { id: 'h2', table: 'T3', waiter: 'Neha', date: new Date().toLocaleDateString(), total: 260, status: 'due_paid' },
-];
+import { loadHistory, type HistoryRow } from '@/lib/transactions';
 
 export default function History() {
+  const [rows, setRows] = useState<HistoryRow[]>([]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const data = await loadHistory(100);
+      if (mounted) setRows(data);
+    })();
+    return () => { mounted = false; };
+  }, []);
   return (
     <View style={{ flex: 1 }}>
       <NavBar title="History" />
       <Text style={styles.heading}>Order & Sales History</Text>
       <FlatList
-        data={MOCK_HISTORY}
+        data={rows}
         keyExtractor={(i) => i.id}
         contentContainerStyle={{ padding: 16, gap: 12 }}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.title}>{item.table} • {item.waiter}</Text>
+            <Text style={styles.title}>{item.table}</Text>
             <Text>{item.date}</Text>
-            <Text>Total: ₹{item.total}</Text>
+            <Text>Total: ₹{item.total.toFixed(2)}</Text>
             <Text>Status: {item.status}</Text>
           </View>
         )}

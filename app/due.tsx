@@ -4,6 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
+import { useOrderStore } from '@/store/order';
+import { saveDueBill } from '@/lib/transactions';
 
 export default function DuePayment() {
   const [name, setName] = useState('');
@@ -18,9 +20,24 @@ export default function DuePayment() {
   };
 
   const addDue = useDuesStore((s) => s.addDue);
+  const orders = useOrderStore((s) => s.orders);
 
-  const onSave = () => {
-    addDue({ name, phone, amount: 0, table: undefined, photoUri });
+  const onSave = async () => {
+    // Use the most recent table with items as the due source
+    const tableId = Object.keys(orders).find((k) => Object.keys(orders[k].lines).length > 0);
+    const tableOrder = tableId ? orders[tableId] : undefined;
+    if (tableOrder) {
+      await saveDueBill({
+        tableId,
+        lines: Object.values(tableOrder.lines),
+        taxPct: tableOrder.taxPct,
+        discountPct: tableOrder.discountPct,
+        dueName: name || null,
+        duePhone: phone || null,
+        photoUri: photoUri || null,
+      });
+    }
+    addDue({ name, phone, amount: 0, table: tableId, photoUri });
     router.replace('/(tabs)/dues');
   };
 

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Pressable, TextInput } from 'react-na
 import { useEffect, useMemo, useState } from 'react';
 import { useOrderStore } from '@/store/order';
 import NavBar from '@/components/NavBar';
+import { savePaidBill } from '@/lib/transactions';
 
 export default function Bill() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,7 +50,20 @@ export default function Bill() {
         <View style={styles.row}><Text>Discount %</Text><TextInput style={styles.input} keyboardType="numeric" value={discountPct} onChangeText={setDiscountPct} /></View>
         <View style={styles.row}><Text style={styles.total}>Total</Text><Text style={styles.total}>₹{total.toFixed(2)}</Text></View>
 
-        <Pressable style={styles.primary} onPress={() => { clear(tableId); router.replace('/(tabs)/home'); }}>
+        <Pressable style={styles.primary} onPress={async () => {
+          try {
+            await savePaidBill({
+              tableId,
+              waiterId: null,
+              lines,
+              taxPct: Number(taxPct) || 0,
+              discountPct: Number(discountPct) || 0,
+            });
+          } finally {
+            clear(tableId);
+            router.replace('/(tabs)/home');
+          }
+        }}>
           <Text style={styles.primaryText}>Paid</Text>
         </Pressable>
         <Pressable style={styles.secondary} onPress={() => router.push('/due')}>
