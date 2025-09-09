@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 type Due = { 
   id: string; 
@@ -219,6 +219,7 @@ const EmptyState = () => (
 export default function DuesDashboard() {
   const allDues = useDuesStore((s) => s.dues);
   const markPaid = useDuesStore((s) => s.markPaid);
+  const hydrate = useDuesStore((s) => s.hydrate);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('date');
@@ -226,6 +227,8 @@ export default function DuesDashboard() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const dues = useMemo(() => allDues.filter((d) => !d.paid), [allDues]);
+
+  React.useEffect(() => { void hydrate(); }, [hydrate]);
 
   const filteredAndSortedDues = useMemo(() => {
     let filtered = dues.filter(due => {
@@ -268,9 +271,7 @@ export default function DuesDashboard() {
           onPress: async () => {
             setLoadingId(dueId);
             try {
-              // Simulate async operation
-              await new Promise(resolve => setTimeout(resolve, 800));
-              markPaid(dueId);
+              await markPaid(dueId);
             } catch (error) {
               Alert.alert('Error', 'Failed to mark as paid. Please try again.');
             } finally {
