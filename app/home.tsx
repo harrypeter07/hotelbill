@@ -137,14 +137,12 @@ const StatusLegend = () => (
   <View style={styles.legendContainer}>
     <Text style={styles.legendTitle}>Table Status</Text>
     <View style={styles.legendRow}>
-      {React.Children.toArray(
-        Object.entries(STATUS_CONFIG).map(([status, config]) => (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
-            <Text style={styles.legendText}>{config.label}</Text>
-          </View>
-        ))
-      )}
+      {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+        <View key={status} style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
+          <Text style={styles.legendText}>{config.label}</Text>
+        </View>
+      ))}
     </View>
   </View>
 );
