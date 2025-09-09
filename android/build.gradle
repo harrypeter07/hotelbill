@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // Explicitly set versions here
-        agp_version = '8.7.0'               // Android Gradle Plugin
+        agp_version = '8.5.0'               // Android Gradle Plugin
         kotlin_version = '1.9.25'           // Kotlin version
     }
 

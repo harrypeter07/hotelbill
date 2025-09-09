@@ -2,7 +2,16 @@
   "cli": { "appVersionSource": "remote" },
   "build": {
     "preview": {
-      "android": { "buildType": "apk" }
+      "android": { 
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
+    },
+    "development": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      }
     }
   }
 }

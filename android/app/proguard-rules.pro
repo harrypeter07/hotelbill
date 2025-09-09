@@ -12,3 +12,24 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
+
+# React Native
+-keep class com.facebook.react.** { *; }
+-keep class com.facebook.jni.** { *; }
+-keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jsc.** { *; }
+
+# Expo
+-keep class expo.modules.** { *; }
+-keep class expo.** { *; }
+
+# Supabase
+-keep class com.supabase.** { *; }
+
+# Keep native methods
+-keepclassmembers class * {
+    native <methods>;
+}
+
+# Keep React Native bridge
+-keep class com.facebook.react.bridge.** { *; }
