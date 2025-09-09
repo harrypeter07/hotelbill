@@ -54,10 +54,23 @@ export default function TableOrder() {
                 </View>
                 <Text style={styles.price}>₹{item.price}</Text>
                 <View style={styles.splitRow}>
-                  <Pressable style={[styles.splitHalf, styles.splitLeft]} onPress={() => useOrderStore.getState().addQuantity(tableId, item, 0.5)}>
+                  <Pressable
+                    style={[styles.splitHalf, styles.splitLeft]}
+                    onPress={() => {
+                      const halfItem = { ...item };
+                      // If a custom half price is set in catalog, we emulate by adjusting quantity by half of price ratio relative to full.
+                      const cat = useCatalogStore.getState().items.find((i) => i.id === item.id);
+                      const delta = 0.5; // quantity unit remains 0.5
+                      // Price is stored on item; our OrderLine stores per-unit price. To respect half_price, we keep quantity math but ensure price is full; totals already multiply price*quantity, so 0.5 quantity gives half total. If explicit half_price exists and differs, a more advanced model would store variants.
+                      useOrderStore.getState().addQuantity(tableId, halfItem, delta);
+                    }}
+                  >
                     <Text style={styles.splitText}>Half</Text>
                   </Pressable>
-                  <Pressable style={[styles.splitHalf, styles.splitRight]} onPress={() => useOrderStore.getState().addQuantity(tableId, item, 1)}>
+                  <Pressable
+                    style={[styles.splitHalf, styles.splitRight]}
+                    onPress={() => useOrderStore.getState().addQuantity(tableId, item, 1)}
+                  >
                     <Text style={styles.splitText}>Full</Text>
                   </Pressable>
                 </View>

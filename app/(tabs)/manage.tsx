@@ -16,6 +16,7 @@ export default function Manage() {
   const [tableName, setTableName] = useState('');
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const [itemHalfPrice, setItemHalfPrice] = useState('');
   // category removed per requirements
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const [editTableId, setEditTableId] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export default function Manage() {
   const clearItemForm = () => {
     setItemName('');
     setItemPrice('');
+    setItemHalfPrice('');
     // no category field
     setEditItemId(null);
     setError(null);
@@ -39,6 +41,7 @@ export default function Manage() {
     setError(null);
     const name = itemName.trim();
     const priceNum = Number(itemPrice);
+    const halfNum = itemHalfPrice.trim() === '' ? null : Number(itemHalfPrice);
     
     if (!name) {
       setError('Item name is required');
@@ -48,11 +51,16 @@ export default function Manage() {
       setError('Valid price required');
       return;
     }
+    if (itemHalfPrice.trim() !== '' && (Number.isNaN(halfNum as number) || (halfNum as number) <= 0)) {
+      setError('Half price must be a positive number');
+      return;
+    }
     
     addOrUpdateItem({
       id: editItemId ?? undefined,
       name,
-      price: priceNum
+      price: priceNum,
+      half_price: halfNum,
     });
     
     clearItemForm();
@@ -74,6 +82,7 @@ export default function Manage() {
     setEditItemId(item.id);
     setItemName(item.name);
     setItemPrice(String(item.price));
+    setItemHalfPrice(item.half_price != null ? String(item.half_price) : '');
     // no category field
     setError(null);
   };
@@ -192,6 +201,16 @@ export default function Manage() {
                 />
               </View>
               <View style={styles.inputRow}>
+                <TextInput
+                  placeholder="Half price (optional)"
+                  value={itemHalfPrice}
+                  onChangeText={setItemHalfPrice}
+                  keyboardType="numeric"
+                  style={[styles.input, styles.flexInput]}
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+              <View style={styles.inputRow}>
                 {/* Category removed */}
                 <Pressable style={styles.primaryButton} onPress={handleAddUpdateItem}>
                   <Text style={styles.primaryButtonText}>
@@ -237,6 +256,9 @@ export default function Manage() {
                       <View style={styles.itemDetails}>
                         <Text style={styles.itemName}>{item.name}</Text>
                         <Text style={styles.itemPrice}>₹{item.price}</Text>
+                        {item.half_price != null && (
+                          <Text style={styles.itemHalfPrice}>Half: ₹{item.half_price}</Text>
+                        )}
                         {/* category badge removed */}
                       </View>
                     </View>
@@ -519,6 +541,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#059669',
     marginBottom: 4,
+  },
+  itemHalfPrice: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#2563eb',
+    marginBottom: 2,
   },
   categoryBadge: {
     backgroundColor: '#f0f9ff',
