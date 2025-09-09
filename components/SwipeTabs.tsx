@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { PanResponder, View, Animated, Dimensions, StyleSheet } from 'react-native';
+import { PanResponder, Animated, Dimensions, StyleSheet } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 
 type Props = {
@@ -13,6 +13,7 @@ export default function SwipeTabs({ children }: Props) {
   const threshold = 60;
   const screenWidth = Dimensions.get('window').width;
   const translateX = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
   const isSwiping = useRef(false);
 
   const panResponder = useMemo(
@@ -21,7 +22,8 @@ export default function SwipeTabs({ children }: Props) {
         onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 8,
         onPanResponderMove: (_, g) => {
           isSwiping.current = true;
-          translateX.setValue(g.dx);
+          const dx = Math.max(-100, Math.min(100, g.dx));
+          translateX.setValue(dx);
         },
         onPanResponderRelease: (_, g) => {
           const current = (segments[segments.length - 1] as string) || 'home';
@@ -30,11 +32,16 @@ export default function SwipeTabs({ children }: Props) {
           const goPrev = g.dx >= threshold && index > 0;
 
           if (goNext || goPrev) {
-            const toValue = goNext ? -screenWidth : screenWidth;
-            Animated.timing(translateX, { toValue, duration: 180, useNativeDriver: true }).start(() => {
-              translateX.setValue(0);
+            const toValue = goNext ? -80 : 80;
+            Animated.parallel([
+              Animated.timing(translateX, { toValue, duration: 150, useNativeDriver: true }),
+              Animated.timing(opacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+            ]).start(() => {
               const target = goNext ? tabOrder[index + 1] : tabOrder[index - 1];
               router.replace({ pathname: `/(tabs)/${target}` });
+              // reset after navigation
+              translateX.setValue(0);
+              opacity.setValue(1);
               isSwiping.current = false;
             });
           } else {
@@ -53,14 +60,14 @@ export default function SwipeTabs({ children }: Props) {
   );
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
+    <Animated.View style={[styles.container, { transform: [{ translateX }], opacity }]} {...panResponder.panHandlers}>
       {children}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#ffffff' },
 });
 
 

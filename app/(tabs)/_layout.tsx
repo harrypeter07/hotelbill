@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useCallback } from 'react';
-import SwipeTabs from '@/components/SwipeTabs';
 
 export default function TabsLayout() {
   const screenOptions = useMemo(() => ({
@@ -35,15 +34,13 @@ export default function TabsLayout() {
   const manageOptions = useMemo(() => ({ title: 'Manage', tabBarIcon: manageIcon }), [manageIcon]);
 
   return (
-    <SwipeTabs>
-      <Tabs screenOptions={screenOptions}>
-        <Tabs.Screen name="home" options={homeOptions} />
-        <Tabs.Screen name="dues" options={duesOptions} />
-        <Tabs.Screen name="history" options={historyOptions} />
-        <Tabs.Screen name="analytics" options={analyticsOptions} />
-        <Tabs.Screen name="manage" options={manageOptions} />
-      </Tabs>
-    </SwipeTabs>
+    <Tabs screenOptions={screenOptions}>
+      <Tabs.Screen name="home" options={homeOptions} />
+      <Tabs.Screen name="dues" options={duesOptions} />
+      <Tabs.Screen name="history" options={historyOptions} />
+      <Tabs.Screen name="analytics" options={analyticsOptions} />
+      <Tabs.Screen name="manage" options={manageOptions} />
+    </Tabs>
   );
 }
 
