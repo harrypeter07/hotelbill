@@ -7,11 +7,11 @@ import { loadHistory, type HistoryRow } from '@/lib/transactions';
 const StatusBadge = ({ status }: { status: string }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'paid': return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' };
-      case 'pending': return { bg: '#fef3c7', text: '#92400e', border: '#fde68a' };
-      case 'cancelled': return { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' };
-      case 'due': return { bg: '#fef2f2', text: '#b91c1c', border: '#fca5a5' };
-      default: return { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' };
+      case 'paid': return { bg: '#f0fdf4', text: '#166534', border: '#22c55e' };
+      case 'pending': return { bg: '#fffbeb', text: '#d97706', border: '#f59e0b' };
+      case 'cancelled': return { bg: '#fef2f2', text: '#dc2626', border: '#ef4444' };
+      case 'due': return { bg: '#fdf2f8', text: '#c2410c', border: '#f97316' };
+      default: return { bg: '#f8fafc', text: '#64748b', border: '#cbd5e1' };
     }
   };
 
@@ -23,7 +23,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Filter Chip Component (typed as React.FC so `key` is accepted on the element)
+// Filter Chip Component
 type FilterChipProps = { label: string; isActive: boolean; onPress: () => void };
 const FilterChip: React.FC<FilterChipProps> = ({ label, isActive, onPress }) => (
   <Pressable
@@ -70,24 +70,30 @@ const HistoryCard = ({ item, index }: { item: HistoryRow; index: number }) => {
   };
 
   return (
-    <View style={[styles.historyCard, { marginTop: index === 0 ? 0 : 12 }]}>
+    <View style={[styles.historyCard, { marginTop: index === 0 ? 0 : 16 }]}>
       <View style={styles.cardHeader}>
         <View style={styles.tableInfo}>
-          <Text style={styles.tableName}>{item.table}</Text>
+          <View style={styles.tableNameContainer}>
+            <Text style={styles.tableName}>{item.table}</Text>
+          </View>
           <Text style={styles.orderDate}>{formatDate(item.date)}</Text>
         </View>
         <StatusBadge status={item.status} />
       </View>
       
+      <View style={styles.cardDivider} />
+      
       <View style={styles.cardFooter}>
-        <View style={styles.amountContainer}>
+        <View style={styles.amountSection}>
           <Text style={styles.amountLabel}>Total Amount</Text>
           <Text style={styles.amountValue}>₹{item.total.toFixed(2)}</Text>
         </View>
         
-        {/* Additional info if available */}
         {item.id && (
-          <Text style={styles.orderId}>Order #{item.id.slice(-6).toUpperCase()}</Text>
+          <View style={styles.orderIdSection}>
+            <Text style={styles.orderIdLabel}>Order ID</Text>
+            <Text style={styles.orderId}>#{item.id.slice(-6).toUpperCase()}</Text>
+          </View>
         )}
       </View>
     </View>
@@ -135,19 +141,17 @@ const SummaryStats = ({ data }: { data: HistoryRow[] }) => {
 
   return (
     <View style={styles.statsContainer}>
-      <View style={styles.statItem}>
+      <View style={styles.statCard}>
         <Text style={styles.statValue}>{stats.totalOrders}</Text>
         <Text style={styles.statLabel}>Total Orders</Text>
       </View>
-      <View style={styles.statDivider} />
-      <View style={styles.statItem}>
+      <View style={styles.statCard}>
         <Text style={styles.statValue}>{stats.todayOrders}</Text>
-        <Text style={styles.statLabel}>Today</Text>
+        <Text style={styles.statLabel}>Today's Orders</Text>
       </View>
-      <View style={styles.statDivider} />
-      <View style={styles.statItem}>
-        <Text style={styles.statValue}>₹{stats.totalRevenue.toFixed(0)}</Text>
-        <Text style={styles.statLabel}>Revenue</Text>
+      <View style={styles.statCard}>
+        <Text style={[styles.statValue, styles.revenueValue]}>₹{stats.totalRevenue.toFixed(0)}</Text>
+        <Text style={styles.statLabel}>Total Revenue</Text>
       </View>
     </View>
   );
@@ -206,7 +210,7 @@ export default function History() {
       <View style={styles.container}>
         <NavBar title="History" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
+          <ActivityIndicator size="large" color="#2563eb" />
           <Text style={styles.loadingText}>Loading order history...</Text>
         </View>
       </View>
@@ -219,12 +223,14 @@ export default function History() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Order & Sales History</Text>
-        {rows.length > 0 && (
-          <Text style={styles.headerSubtitle}>
-            {filteredData.length} of {rows.length} orders
-          </Text>
-        )}
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Order & Sales History</Text>
+          {rows.length > 0 && (
+            <Text style={styles.headerSubtitle}>
+              {filteredData.length} of {rows.length} orders
+            </Text>
+          )}
+        </View>
       </View>
 
       {rows.length > 0 && (
@@ -247,7 +253,7 @@ export default function History() {
             <View style={styles.filterChipsContainer}>
               {React.Children.toArray(statusOptions.map(status => (
                 <FilterChip
-                  label={status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+                  label={status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
                   isActive={statusFilter === status}
                   onPress={() => setStatusFilter(status)}
                 />
@@ -269,7 +275,8 @@ export default function History() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#3b82f6']}
+              colors={['#2563eb']}
+              tintColor="#2563eb"
             />
           }
         />
@@ -295,109 +302,124 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
+    backgroundColor: '#ffffff',
   },
   loadingText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#64748b',
     fontWeight: '500',
   },
   header: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  headerContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#0f172a',
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#64748b',
     fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 20,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     paddingVertical: 20,
     paddingHorizontal: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
     elevation: 2,
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#0f172a',
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  revenueValue: {
+    color: '#059669',
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: '#e5e7eb',
-    marginHorizontal: 16,
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   filtersSection: {
     backgroundColor: '#ffffff',
     marginHorizontal: 16,
     marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 3,
   },
   searchContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   searchInput: {
     backgroundColor: '#f8fafc',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#0f172a',
+    fontWeight: '500',
   },
   filterChipsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     flexWrap: 'wrap',
   },
   filterChip: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
   },
   filterChipActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
   },
   filterChipText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#64748b',
   },
   filterChipTextActive: {
@@ -405,113 +427,168 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
+    paddingBottom: 32,
   },
   historyCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tableInfo: {
     flex: 1,
+    marginRight: 16,
+  },
+  tableNameContainer: {
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   tableName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#0f172a',
   },
   orderDate: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#64748b',
     fontWeight: '500',
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'capitalize',
+    letterSpacing: 0.5,
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#f1f5f9',
+    marginBottom: 16,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
-  amountContainer: {
+  amountSection: {
     flex: 1,
   },
   amountLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-    marginBottom: 2,
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   amountValue: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: '#059669',
+    letterSpacing: -0.5,
+  },
+  orderIdSection: {
+    alignItems: 'flex-end',
+  },
+  orderIdLabel: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontWeight: '600',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   orderId: {
-    fontSize: 12,
-    color: '#9ca3af',
-    fontWeight: '500',
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '700',
     fontFamily: 'monospace',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
+    backgroundColor: '#ffffff',
+    margin: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#f3f4f6',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
   },
   emptyIconText: {
-    fontSize: 32,
+    fontSize: 36,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 8,
+    color: '#0f172a',
+    marginBottom: 12,
   },
   emptyMessage: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 15,
+    color: '#64748b',
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
+    marginBottom: 32,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   retryButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    backgroundColor: '#2563eb',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2563eb',
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   retryButtonText: {
     color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 15,
+    letterSpacing: 0.5,
   },
 });
