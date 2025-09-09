@@ -1,9 +1,9 @@
 // Returns a deterministic image URL for a given dish name.
-// Uses Unsplash Source which doesn't require an API key.
+// Use picsum.photos with a seeded path to ensure a stable image without API keys.
 export function getItemImageUri(name: string): string {
-  const query = encodeURIComponent(name.toLowerCase());
-  // small square image; fall back-safe endpoint
-  return `https://source.unsplash.com/collection/8354882/200x200/?${query}`;
+  const seed = encodeURIComponent(name.trim().toLowerCase() || 'item');
+  // 200x200 deterministic image per seed
+  return `https://picsum.photos/seed/${seed}/200/200`;
 }
 
 
