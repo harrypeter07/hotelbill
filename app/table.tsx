@@ -2,18 +2,12 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { useMemo } from 'react';
 import { useOrderStore, MenuItem } from '@/store/order';
+import { useCatalogStore } from '@/store/catalog';
 import { ImageBackground } from 'react-native';
 import { getItemImageUri } from '@/lib/images';
 import NavBar from '@/components/NavBar';
 
-const MENU: (MenuItem & { color: string })[] = [
-  { id: 'chapati', name: 'Chapati', price: 15, color: '#fde68a' },
-  { id: 'dal', name: 'Dal', price: 60, color: '#bbf7d0' },
-  { id: 'paneer', name: 'Paneer', price: 180, color: '#bfdbfe' },
-  { id: 'rice', name: 'Rice', price: 70, color: '#fca5a5' },
-  { id: 'curd', name: 'Curd', price: 40, color: '#ddd6fe' },
-  { id: 'water', name: 'Water', price: 20, color: '#a7f3d0' },
-];
+const palette = ['#fde68a','#bbf7d0','#bfdbfe','#fca5a5','#ddd6fe','#a7f3d0','#fecdd3','#d1fae5','#e9d5ff','#fee2e2'];
 
 export default function TableOrder() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +15,7 @@ export default function TableOrder() {
   const addItem = useOrderStore((s) => s.addItem);
   const removeItem = useOrderStore((s) => s.removeItem);
   const tableOrder = useOrderStore((s) => s.orders[tableId]);
+  const catalogItems = useCatalogStore((s) => s.items);
 
   const lines = useMemo(() => (tableOrder ? Object.values(tableOrder.lines) : []), [tableOrder]);
   const qtyById = useMemo(() => Object.fromEntries(lines.map((l) => [l.id, l.quantity])), [lines]);
@@ -34,12 +29,16 @@ export default function TableOrder() {
     return { subtotal, tax, discount, total };
   }, [lines, tableOrder?.taxPct, tableOrder?.discountPct]);
 
+  const menu = useMemo<(MenuItem & { color: string })[]>(() => {
+    return catalogItems.map((i, idx) => ({ id: i.id, name: i.name, price: i.price, color: palette[idx % palette.length] }));
+  }, [catalogItems]);
+
   return (
     <View style={{ flex: 1 }}>
       <NavBar title={`Table ${id}`} />
       <View style={styles.rotiRow}><Text style={styles.rotiLabel}>Roti</Text><Text style={styles.rotiValue}>{qtyById['chapati'] || 0}</Text></View>
       <FlatList
-        data={MENU}
+        data={menu}
         numColumns={3}
         keyExtractor={(i) => i.id}
         columnWrapperStyle={{ gap: 12 }}
