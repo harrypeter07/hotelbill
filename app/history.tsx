@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ActivityIndicator, RefreshControl } from 'react-native';
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import NavBar from '@/components/NavBar';
 import { loadHistory, type HistoryRow } from '@/lib/transactions';
 
@@ -23,16 +23,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Filter Chip Component
-const FilterChip = ({ 
-  label, 
-  isActive, 
-  onPress 
-}: { 
-  label: string; 
-  isActive: boolean; 
-  onPress: () => void; 
-}) => (
+// Filter Chip Component (typed as React.FC so `key` is accepted on the element)
+type FilterChipProps = { label: string; isActive: boolean; onPress: () => void };
+const FilterChip: React.FC<FilterChipProps> = ({ label, isActive, onPress }) => (
   <Pressable
     style={[styles.filterChip, isActive && styles.filterChipActive]}
     onPress={onPress}
@@ -252,14 +245,13 @@ export default function History() {
             </View>
             
             <View style={styles.filterChipsContainer}>
-              {statusOptions.map(status => (
+              {React.Children.toArray(statusOptions.map(status => (
                 <FilterChip
-                  key={status}
                   label={status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
                   isActive={statusFilter === status}
                   onPress={() => setStatusFilter(status)}
                 />
-              ))}
+              )))}
             </View>
           </View>
         </>
