@@ -251,15 +251,20 @@ export default function History() {
             </View>
             
             <View style={styles.filterChipsContainer}>
-              {React.Children.toArray(
-                statusOptions.map((status) => (
+              <FlatList
+                data={statusOptions}
+                keyExtractor={(s) => s}
+                horizontal
+                renderItem={({ item: status }) => (
                   <FilterChip
                     label={status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
                     isActive={statusFilter === status}
                     onPress={() => setStatusFilter(status)}
                   />
-                ))
-              )}
+                )}
+                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                showsHorizontalScrollIndicator={false}
+              />
             </View>
           </View>
         </>
