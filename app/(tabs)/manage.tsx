@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView } from 'react-native';
 import { useState, useMemo } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
@@ -27,108 +27,537 @@ export default function Manage() {
     [items, search]
   );
 
+  const clearItemForm = () => {
+    setItemName('');
+    setItemPrice('');
+    setItemCategory('');
+    setEditItemId(null);
+    setError(null);
+  };
+
+  const clearTableForm = () => {
+    setTableName('');
+    setEditTableId(null);
+  };
+
+  const handleAddUpdateItem = () => {
+    setError(null);
+    const name = itemName.trim();
+    const priceNum = Number(itemPrice);
+    
+    if (!name) {
+      setError('Item name is required');
+      return;
+    }
+    if (Number.isNaN(priceNum) || priceNum <= 0) {
+      setError('Valid price required');
+      return;
+    }
+    
+    addOrUpdateItem({
+      id: editItemId ?? undefined,
+      name,
+      price: priceNum,
+      category: itemCategory.trim() || undefined
+    });
+    
+    clearItemForm();
+  };
+
+  const handleAddUpdateTable = () => {
+    const name = tableName.trim();
+    if (!name) return;
+    
+    addOrUpdateTable({
+      id: editTableId ?? undefined,
+      name
+    });
+    
+    clearTableForm();
+  };
+
+  const handleEditItem = (item: CatalogItem) => {
+    setEditItemId(item.id);
+    setItemName(item.name);
+    setItemPrice(String(item.price));
+    setItemCategory(item.category ?? '');
+    setError(null);
+  };
+
+  const handleEditTable = (table: TableInfo) => {
+    setTableName(table.name);
+    setEditTableId(table.id);
+  };
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <NavBar title="Manage" />
-      <View style={styles.section}>
-        <Text style={styles.heading}>Tables</Text>
-        <View style={styles.row}>
-          <TextInput placeholder="Table name (e.g., T7)" value={tableName} onChangeText={setTableName} style={styles.input} />
-          <Pressable
-            style={styles.primary}
-            onPress={() => {
-              const name = tableName.trim();
-              if (!name) return;
-              addOrUpdateTable({ id: editTableId ?? undefined, name });
-              setTableName('');
-              setEditTableId(null);
-            }}
-          >
-            <Text style={styles.primaryText}>{editTableId ? 'Update' : 'Add'}</Text>
-          </Pressable>
-        </View>
-        <FlatList
-          data={tables}
-          keyExtractor={(t) => t.id}
-          contentContainerStyle={{ gap: 8 }}
-          renderItem={({ item }) => (
-            <View style={styles.listRow}>
-              <Text style={styles.listTitle}>{item.name}</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable style={styles.secondary} onPress={() => { setTableName(item.name); setEditTableId(item.id); }}><Text style={styles.secondaryText}>Edit</Text></Pressable>
-                <Pressable style={styles.danger} onPress={() => removeTable(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
-              </View>
-            </View>
-          )}
-        />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Restaurant Management</Text>
+        <Text style={styles.headerSubtitle}>Manage tables and menu items</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Items</Text>
-        <View style={styles.row}>
-          <TextInput placeholder="Search items" value={search} onChangeText={setSearch} style={styles.input} />
-        </View>
-        <View style={styles.row}>
-          <TextInput placeholder="Item name" value={itemName} onChangeText={setItemName} style={styles.input} />
-          <TextInput placeholder="Price" value={itemPrice} onChangeText={setItemPrice} keyboardType="numeric" style={styles.input} />
-          <TextInput placeholder="Category (e.g., Main, Breads)" value={itemCategory} onChangeText={setItemCategory} style={styles.input} />
-          <Pressable style={styles.primary} onPress={() => {
-            setError(null);
-            const name = itemName.trim();
-            const priceNum = Number(itemPrice);
-            if (!name) { setError('Item name is required'); return; }
-            if (Number.isNaN(priceNum) || priceNum <= 0) { setError('Valid price required'); return; }
-            addOrUpdateItem({ id: editItemId ?? undefined, name, price: priceNum, category: itemCategory.trim() || undefined });
-            setItemName('');
-            setItemPrice('');
-            setItemCategory('');
-            setEditItemId(null);
-          }}>
-            <Text style={styles.primaryText}>{editItemId ? 'Update' : 'Save'}</Text>
-          </Pressable>
-        </View>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(i) => i.id}
-          contentContainerStyle={{ gap: 8 }}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Image source={{ uri: getItemImageUri(item.name) }} style={{ width: 48, height: 48, borderRadius: 8 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>{item.name}</Text>
-                  <Text>₹{item.price}{item.category ? ` • ${item.category}` : ''}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable style={styles.secondary} onPress={() => { setEditItemId(item.id); setItemName(item.name); setItemPrice(String(item.price)); setItemCategory(item.category ?? ''); }}><Text style={styles.secondaryText}>Edit</Text></Pressable>
-                <Pressable style={styles.danger} onPress={() => removeItem(item.id)}><Text style={styles.dangerText}>Remove</Text></Pressable>
-              </View>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Tables Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Tables ({tables.length})</Text>
+          </View>
+          
+          {/* Add/Edit Table Form */}
+          <View style={styles.formContainer}>
+            <View style={styles.inputRow}>
+              <TextInput
+                placeholder="Table name (e.g., T7)"
+                value={tableName}
+                onChangeText={setTableName}
+                style={styles.input}
+                placeholderTextColor="#9ca3af"
+              />
+              <Pressable style={styles.primaryButton} onPress={handleAddUpdateTable}>
+                <Text style={styles.primaryButtonText}>
+                  {editTableId ? 'Update' : 'Add'}
+                </Text>
+              </Pressable>
+              {editTableId && (
+                <Pressable style={styles.secondaryButton} onPress={clearTableForm}>
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </Pressable>
+              )}
             </View>
-          )}
-        />
-      </View>
+          </View>
+
+          {/* Tables List */}
+          <View style={styles.listContainer}>
+            {tables.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>No tables added yet</Text>
+                <Text style={styles.emptySubText}>Add your first table above</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={tables}
+                keyExtractor={(t) => t.id}
+                renderItem={({ item }) => (
+                  <View style={styles.listItem}>
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemTitle}>{item.name}</Text>
+                      <Text style={styles.itemSubtitle}>Table ID: {item.id.slice(-6)}</Text>
+                    </View>
+                    <View style={styles.itemActions}>
+                      <Pressable
+                        style={styles.editButton}
+                        onPress={() => handleEditTable(item)}
+                      >
+                        <Text style={styles.editButtonText}>Edit</Text>
+                      </Pressable>
+                      <Pressable
+                        style={styles.deleteButton}
+                        onPress={() => removeTable(item.id)}
+                      >
+                        <Text style={styles.deleteButtonText}>Delete</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Items Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Menu Items ({items.length})</Text>
+          </View>
+
+          {/* Search */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder="Search menu items..."
+              value={search}
+              onChangeText={setSearch}
+              style={styles.searchInput}
+              placeholderTextColor="#9ca3af"
+            />
+          </View>
+
+          {/* Add/Edit Item Form */}
+          <View style={styles.formContainer}>
+            <View style={styles.inputColumn}>
+              <View style={styles.inputRow}>
+                <TextInput
+                  placeholder="Item name"
+                  value={itemName}
+                  onChangeText={setItemName}
+                  style={[styles.input, styles.flexInput]}
+                  placeholderTextColor="#9ca3af"
+                />
+                <TextInput
+                  placeholder="Price"
+                  value={itemPrice}
+                  onChangeText={setItemPrice}
+                  keyboardType="numeric"
+                  style={styles.input}
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+              <View style={styles.inputRow}>
+                <TextInput
+                  placeholder="Category (e.g., Main, Breads)"
+                  value={itemCategory}
+                  onChangeText={setItemCategory}
+                  style={[styles.input, styles.flexInput]}
+                  placeholderTextColor="#9ca3af"
+                />
+                <Pressable style={styles.primaryButton} onPress={handleAddUpdateItem}>
+                  <Text style={styles.primaryButtonText}>
+                    {editItemId ? 'Update' : 'Save'}
+                  </Text>
+                </Pressable>
+                {editItemId && (
+                  <Pressable style={styles.secondaryButton} onPress={clearItemForm}>
+                    <Text style={styles.secondaryButtonText}>Cancel</Text>
+                  </Pressable>
+                )}
+              </View>
+              {error && (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Items List */}
+          <View style={styles.listContainer}>
+            {filteredItems.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>
+                  {search ? 'No items match your search' : 'No menu items added yet'}
+                </Text>
+                <Text style={styles.emptySubText}>
+                  {search ? 'Try a different search term' : 'Add your first menu item above'}
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredItems}
+                keyExtractor={(i) => i.id}
+                renderItem={({ item }) => (
+                  <View style={styles.itemCard}>
+                    <View style={styles.itemCardContent}>
+                      <Image
+                        source={{ uri: getItemImageUri(item.name) }}
+                        style={styles.itemImage}
+                      />
+                      <View style={styles.itemDetails}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemPrice}>₹{item.price}</Text>
+                        {item.category && (
+                          <View style={styles.categoryBadge}>
+                            <Text style={styles.categoryText}>{item.category}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    <View style={styles.itemActions}>
+                      <Pressable
+                        style={styles.editButton}
+                        onPress={() => handleEditItem(item)}
+                      >
+                        <Text style={styles.editButtonText}>Edit</Text>
+                      </Pressable>
+                      <Pressable
+                        style={styles.deleteButton}
+                        onPress={() => removeItem(item.id)}
+                      >
+                        <Text style={styles.deleteButtonText}>Delete</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+                scrollEnabled={false}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              />
+            )}
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { padding: 16, gap: 12 },
-  heading: { fontSize: 18, fontWeight: '700' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  input: { flex: 1, backgroundColor: 'white', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
-  primary: { backgroundColor: '#111827', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8 },
-  primaryText: { color: 'white', fontWeight: '600' },
-  secondary: { backgroundColor: 'white', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb' },
-  secondaryText: { color: '#111827', fontWeight: '700' },
-  danger: { backgroundColor: '#fee2e2', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
-  dangerText: { color: '#991b1b', fontWeight: '700' },
-  listRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, backgroundColor: 'white' },
-  listTitle: { fontWeight: '700' },
-  card: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, backgroundColor: 'white' },
-  cardTitle: { fontWeight: '700' },
-  error: { color: '#b91c1c', fontWeight: '600' },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 1,
+    letterSpacing: -0.2,
+  },
+  headerSubtitle: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  section: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 12,
+    marginTop: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: -0.2,
+  },
+  formContainer: {
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  inputColumn: {
+    gap: 8,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  input: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 12,
+    color: '#0f172a',
+    fontWeight: '500',
+    minWidth: 80,
+  },
+  flexInput: {
+    flex: 1,
+  },
+  searchContainer: {
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  searchInput: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 12,
+    color: '#0f172a',
+    fontWeight: '500',
+  },
+  primaryButton: {
+    backgroundColor: '#0f172a',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 12,
+    letterSpacing: 0.2,
+  },
+  secondaryButton: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  secondaryButtonText: {
+    color: '#0f172a',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  errorContainer: {
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#dc2626',
+    fontWeight: '600',
+    fontSize: 10,
+  },
+  listContainer: {
+    padding: 16,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  emptySubText: {
+    fontSize: 10,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  itemSubtitle: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  editButton: {
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  editButtonText: {
+    color: '#374151',
+    fontWeight: '700',
+    fontSize: 10,
+  },
+  deleteButton: {
+    backgroundColor: '#fef2f2',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  deleteButtonText: {
+    color: '#dc2626',
+    fontWeight: '700',
+    fontSize: 10,
+  },
+  separator: {
+    height: 8,
+  },
+  itemCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  itemCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  itemImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  itemDetails: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 2,
+  },
+  itemPrice: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#059669',
+    marginBottom: 4,
+  },
+  categoryBadge: {
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    alignSelf: 'flex-start',
+  },
+  categoryText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#0369a1',
+    letterSpacing: 0.2,
+  },
 });
-
-

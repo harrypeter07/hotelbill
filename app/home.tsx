@@ -15,28 +15,24 @@ const STATUS_CONFIG: Record<Table['status'], {
   dot: string;
   border: string;
   label: string;
-  icon: string;
 }> = {
   empty: {
     color: '#f0fdf4',
     dot: '#22c55e',
     border: '#22c55e',
     label: 'Available',
-    icon: '✅'
   },
   ordering: {
     color: '#fffbeb',
     dot: '#f59e0b',
     border: '#f59e0b',
     label: 'Ordering',
-    icon: '📝'
   },
   occupied: {
     color: '#fef2f2',
     dot: '#ef4444',
     border: '#ef4444',
     label: 'Occupied',
-    icon: '👥'
   },
 };
 
@@ -114,7 +110,6 @@ const TableTile = ({
       </View>
       
       <View style={styles.tileContent}>
-        <Text style={styles.tileIcon}>{config.icon}</Text>
         <Text style={styles.tileStatus}>{config.label}</Text>
       </View>
       
@@ -137,14 +132,12 @@ const TableTile = ({
 const StatusLegend = () => (
   <View style={styles.legendContainer}>
     <View style={styles.legendRow}>
-      {React.Children.toArray(
-        Object.entries(STATUS_CONFIG).map(([_, config]) => (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
-            <Text style={styles.legendText}>{config.label}</Text>
-          </View>
-        ))
-      )}
+      {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+        <View key={status} style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
+          <Text style={styles.legendText}>{config.label}</Text>
+        </View>
+      ))}
     </View>
   </View>
 );
@@ -258,14 +251,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     marginHorizontal: 12,
     marginTop: 6,
-    borderRadius: 6,
-    padding: 8,
+    borderRadius: 10,
+    padding: 10,
     borderWidth: 1,
-    borderColor: '#000000',
+    borderColor: '#d1d5db',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
     elevation: 1,
   },
   statCard: {
@@ -288,14 +281,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     marginHorizontal: 12,
     marginTop: 6,
-    borderRadius: 6,
-    padding: 8,
+    borderRadius: 10,
+    padding: 10,
     borderWidth: 1,
-    borderColor: '#000000',
+    borderColor: '#d1d5db',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
     elevation: 1,
   },
   legendRow: {
@@ -305,7 +298,9 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 6,
   },
   legendDot: {
     width: 6,
@@ -323,13 +318,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 6,
     marginBottom: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#000000',
+    borderColor: '#d1d5db',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
     elevation: 2,
   },
   tablesSectionHeader: {
@@ -354,15 +349,14 @@ const styles = StyleSheet.create({
   },
   tableTile: {
     borderWidth: 2,
-    borderRadius: 12,
-    padding: 16,
-    minHeight: 140,
+    borderRadius: 14,
+    padding: 10,
     justifyContent: 'space-between',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tileHeader: {
     flexDirection: 'row',
@@ -371,7 +365,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tileNumber: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: '#0f172a',
     letterSpacing: -0.5,
@@ -396,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   tileStatus: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     color: '#0f172a',
     textAlign: 'center',
