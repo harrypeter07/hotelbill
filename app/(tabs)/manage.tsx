@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, RefreshControl } from 'react-native';
 import { useState } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
@@ -92,6 +92,18 @@ export default function Manage() {
     setEditTableId(table.id);
   };
 
+  const hydrated = useCatalogStore((s) => s.hydrated);
+  const hydrate = useCatalogStore((s) => s.hydrate);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await hydrate();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <NavBar title="Manage" />
@@ -102,7 +114,11 @@ export default function Manage() {
         <Text style={styles.headerSubtitle}>Manage tables and menu items</Text>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {/* Tables Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

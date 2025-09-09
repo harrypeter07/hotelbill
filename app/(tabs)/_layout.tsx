@@ -1,8 +1,27 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import { View } from 'react-native';
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const segments = useSegments();
+  const tabOrder = useRef(['home','dues','history','analytics','manage']);
+  const startX = useRef(0);
+
+  const onHandlerStateChange = useCallback((event: any) => {
+    const { state, translationX } = event.nativeEvent || {};
+    if (state === State.END) {
+      const current = segments[segments.length - 1] as string | undefined;
+      const index = current ? tabOrder.current.indexOf(current) : 0;
+      if (translationX < -50 && index < tabOrder.current.length - 1) {
+        router.replace(`/(tabs)/${tabOrder.current[index + 1]}`);
+      } else if (translationX > 50 && index > 0) {
+        router.replace(`/(tabs)/${tabOrder.current[index - 1]}`);
+      }
+    }
+  }, [router, segments]);
   const screenOptions = useMemo(() => ({
     headerShown: false,
     tabBarActiveTintColor: '#111827',
@@ -34,13 +53,17 @@ export default function TabsLayout() {
   const manageOptions = useMemo(() => ({ title: 'Manage', tabBarIcon: manageIcon }), [manageIcon]);
 
   return (
-    <Tabs screenOptions={screenOptions}>
-      <Tabs.Screen name="home" options={homeOptions} />
-      <Tabs.Screen name="dues" options={duesOptions} />
-      <Tabs.Screen name="history" options={historyOptions} />
-      <Tabs.Screen name="analytics" options={analyticsOptions} />
-      <Tabs.Screen name="manage" options={manageOptions} />
-    </Tabs>
+    <PanGestureHandler onHandlerStateChange={onHandlerStateChange}>
+      <View style={{ flex: 1 }}>
+        <Tabs screenOptions={screenOptions}>
+          <Tabs.Screen name="home" options={homeOptions} />
+          <Tabs.Screen name="dues" options={duesOptions} />
+          <Tabs.Screen name="history" options={historyOptions} />
+          <Tabs.Screen name="analytics" options={analyticsOptions} />
+          <Tabs.Screen name="manage" options={manageOptions} />
+        </Tabs>
+      </View>
+    </PanGestureHandler>
   );
 }
 
