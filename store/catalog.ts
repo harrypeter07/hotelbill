@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { getDb } from '@/lib/db';
 
 export type TableInfo = { id: string; name: string };
-export type CatalogItem = { id: string; name: string; price: number; category?: string };
+export type CatalogItem = { id: string; name: string; price: number; half_price?: number | null; category?: string };
 
 type CatalogState = {
   tables: TableInfo[];
@@ -11,7 +11,7 @@ type CatalogState = {
   hydrate: () => Promise<void>;
   addOrUpdateTable: (table: Partial<TableInfo> & { name: string }) => void;
   removeTable: (id: string) => void;
-  addOrUpdateItem: (item: Partial<CatalogItem> & { name: string; price: number; category?: string }) => void;
+  addOrUpdateItem: (item: Partial<CatalogItem> & { name: string; price: number; half_price?: number | null; category?: string }) => void;
   removeItem: (id: string) => void;
 };
 
@@ -27,7 +27,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     try {
       const db = await getDb();
       const tables = await db.getAllAsync<TableInfo>('SELECT id, name FROM tables ORDER BY name');
-      const items = await db.getAllAsync<CatalogItem>('SELECT id, name, price, category FROM items ORDER BY name');
+      const items = await db.getAllAsync<CatalogItem>('SELECT id, name, price, half_price, category FROM items ORDER BY name');
       // Seed defaults if empty
       if (tables.length === 0) {
         const defaults = ['T1','T2','T3'].map((n, i) => ({ id: String(i+1), name: n }));
@@ -53,7 +53,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
         await db.runAsync('BEGIN');
         try {
           for (const i of defaults) {
-            await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, category) VALUES (?, ?, ?, ?)', [i.id, i.name, i.price, i.category ?? null]);
+            await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, half_price, category) VALUES (?, ?, ?, ?, ?)', [i.id, i.name, i.price, null, i.category ?? null]);
           }
           await db.runAsync('COMMIT');
         } catch (e) {
@@ -93,9 +93,9 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     set(async (s) => {
       const id = ensureId(item.id);
       const existingIdx = s.items.findIndex((t) => t.id === id);
-      const next: CatalogItem = { id, name: item.name, price: Number(item.price), category: item.category };
+      const next: CatalogItem = { id, name: item.name, price: Number(item.price), half_price: item.half_price != null ? Number(item.half_price) : null, category: item.category };
       const db = await getDb();
-      await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, category) VALUES (?, ?, ?, ?)', [id, next.name, next.price, next.category ?? null]);
+      await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, half_price, category) VALUES (?, ?, ?, ?, ?)', [id, next.name, next.price, next.half_price, next.category ?? null]);
       if (existingIdx >= 0) {
         const copy = s.items.slice();
         copy[existingIdx] = next;
