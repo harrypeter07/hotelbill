@@ -70,7 +70,7 @@ const HistoryCard = ({ item, index }: { item: HistoryRow; index: number }) => {
   };
 
   return (
-    <View style={[styles.historyCard, { marginTop: index === 0 ? 0 : 16 }]}>
+    <View style={[styles.historyCard, { marginTop: index === 0 ? 0 : 8 }]}>
       <View style={styles.cardHeader}>
         <View style={styles.tableInfo}>
           <View style={styles.tableNameContainer}>
