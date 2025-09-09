@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useOrderStore } from '@/store/order';
 import { useCatalogStore } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
@@ -15,12 +15,12 @@ const BarChart = ({ data, height = 160 }: { data: Array<{ key: string; total: nu
   return (
     <View style={[styles.chartContainer, { height }]}>
       <View style={styles.chartContent}>
-        {data.map((item, index) => {
+        {React.Children.toArray(data.map((item, index) => {
           const barHeight = Math.max(4, (item.total / maxVal) * (height - 60));
           const dayName = new Date(item.key).toLocaleDateString('en', { weekday: 'short' });
           
           return (
-            <View key={item.key} style={styles.barContainer}>
+            <View style={styles.barContainer}>
               <View style={styles.barWrapper}>
                 <View style={[styles.bar, { height: barHeight, width: barWidth }]} />
                 <Text style={styles.barValue}>₹{item.total > 0 ? item.total.toFixed(0) : '0'}</Text>
@@ -28,7 +28,7 @@ const BarChart = ({ data, height = 160 }: { data: Array<{ key: string; total: nu
               <Text style={styles.barLabel}>{dayName}</Text>
             </View>
           );
-        })}
+        }))}
       </View>
     </View>
   );
@@ -185,7 +185,7 @@ export default function Analytics() {
           />
           <MetricCard
             title="Conversion Rate"
-            value={`${(summary?.totals.conversionToday * 100).toFixed(1) || '0.0'}%`}
+            value={`${(((summary?.totals.conversionToday ?? 0) * 100).toFixed(1))}%`}
             subtitle="Success rate"
             color="#84cc16"
           />
@@ -212,14 +212,13 @@ export default function Analytics() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Sales by Category</Text>
           <View style={styles.card}>
-            {summary.salesByCategoryToday.map((item, index) => (
+            {React.Children.toArray(summary.salesByCategoryToday.map((item, index) => (
               <DataRow
-                key={item.category}
                 label={item.category}
                 value={`₹${item.total.toFixed(2)}`}
                 isLast={index === summary.salesByCategoryToday.length - 1}
               />
-            ))}
+            )))}
           </View>
         </View>
       )}
@@ -229,14 +228,13 @@ export default function Analytics() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Selling Items</Text>
           <View style={styles.card}>
-            {summary.topItemsToday.map((item, index) => (
+            {React.Children.toArray(summary.topItemsToday.map((item, index) => (
               <DataRow
-                key={item.name}
                 label={item.name}
                 value={`₹${item.total.toFixed(2)}`}
                 isLast={index === summary.topItemsToday.length - 1}
               />
-            ))}
+            )))}
           </View>
         </View>
       )}
