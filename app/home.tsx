@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import NavBar from '@/components/NavBar';
 
 const { width: screenWidth } = Dimensions.get('window');
-const tileWidth = (screenWidth - 48) / 3; // 3 columns with padding
+const tileWidth = (screenWidth - 56) / 3; // 3 columns with more spacing
 
 type Table = { id: number; name: string; status: 'empty' | 'ordering' | 'occupied' };
 
@@ -20,21 +20,21 @@ const STATUS_CONFIG: Record<Table['status'], {
   empty: {
     color: '#f0fdf4',
     dot: '#22c55e',
-    border: '#bbf7d0',
+    border: '#22c55e',
     label: 'Available',
     icon: '✅'
   },
   ordering: {
     color: '#fffbeb',
     dot: '#f59e0b',
-    border: '#fde68a',
+    border: '#f59e0b',
     label: 'Ordering',
     icon: '📝'
   },
   occupied: {
     color: '#fef2f2',
     dot: '#ef4444',
-    border: '#fecaca',
+    border: '#ef4444',
     label: 'Occupied',
     icon: '👥'
   },
@@ -63,7 +63,7 @@ const QuickStats = ({ tables, orders }: { tables: Table[]; orders: any }) => {
     <View style={styles.statsContainer}>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>{stats.total}</Text>
-        <Text style={styles.statLabel}>Total Tables</Text>
+        <Text style={styles.statLabel}>Total</Text>
       </View>
       <View style={styles.statCard}>
         <Text style={[styles.statNumber, { color: '#ef4444' }]}>{stats.occupied}</Text>
@@ -75,7 +75,7 @@ const QuickStats = ({ tables, orders }: { tables: Table[]; orders: any }) => {
       </View>
       <View style={styles.statCard}>
         <Text style={[styles.statNumber, { color: '#3b82f6' }]}>{stats.occupancyRate.toFixed(0)}%</Text>
-        <Text style={styles.statLabel}>Occupancy</Text>
+        <Text style={styles.statLabel}>Rate</Text>
       </View>
     </View>
   );
@@ -135,46 +135,15 @@ const TableTile = ({
 // Status Legend Component
 const StatusLegend = () => (
   <View style={styles.legendContainer}>
-    <Text style={styles.legendTitle}>Table Status</Text>
     <View style={styles.legendRow}>
-      {Object.entries(STATUS_CONFIG).map(([status, config]) => (
-        <View key={status} style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
-          <Text style={styles.legendText}>{config.label}</Text>
-        </View>
-      ))}
-    </View>
-  </View>
-);
-
-// Quick Actions Component
-const QuickActions = () => (
-  <View style={styles.quickActionsContainer}>
-    <Text style={styles.sectionTitle}>Quick Actions</Text>
-    <View style={styles.actionsRow}>
-      <Pressable 
-        style={styles.actionButton}
-        onPress={() => router.push('/(tabs)/analytics')}
-      >
-        <Text style={styles.actionIcon}>📊</Text>
-        <Text style={styles.actionText}>Analytics</Text>
-      </Pressable>
-      
-      <Pressable 
-        style={styles.actionButton}
-        onPress={() => router.push('/(tabs)/history')}
-      >
-        <Text style={styles.actionIcon}>📋</Text>
-        <Text style={styles.actionText}>History</Text>
-      </Pressable>
-      
-      <Pressable 
-        style={styles.actionButton}
-        onPress={() => router.push('/(tabs)/catalog')}
-      >
-        <Text style={styles.actionIcon}>📦</Text>
-        <Text style={styles.actionText}>Menu</Text>
-      </Pressable>
+      {React.Children.toArray(
+        Object.entries(STATUS_CONFIG).map(([status, config]) => (
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
+            <Text style={styles.legendText}>{config.label}</Text>
+          </View>
+        ))
+      )}
     </View>
   </View>
 );
@@ -214,22 +183,23 @@ export default function Home() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Restaurant Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Manage your tables and orders</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Restaurant Dashboard</Text>
+          <Text style={styles.headerSubtitle}>Manage tables & orders</Text>
+        </View>
       </View>
 
       {/* Quick Stats */}
       <QuickStats tables={tablesWithStatus} orders={orders} />
-
-      {/* Quick Actions */}
-      <QuickActions />
 
       {/* Status Legend */}
       <StatusLegend />
 
       {/* Tables Grid */}
       <View style={styles.tablesSection}>
-        <Text style={styles.sectionTitle}>Tables ({tables.length})</Text>
+        <View style={styles.tablesSectionHeader}>
+          <Text style={styles.sectionTitle}>Tables ({tables.length})</Text>
+        </View>
         <FlatList
           data={tablesWithStatus}
           numColumns={3}
@@ -258,107 +228,74 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  headerContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
+    color: '#0f172a',
+    marginBottom: 1,
+    letterSpacing: -0.2,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#64748b',
     fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
+    marginHorizontal: 12,
+    marginTop: 6,
+    borderRadius: 6,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.02,
+    shadowRadius: 2,
+    elevation: 1,
   },
   statCard: {
     flex: 1,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 12,
     fontWeight: '800',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#0f172a',
+    marginBottom: 1,
+    letterSpacing: -0.2,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  quickActionsContainer: {
-    backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
+    fontSize: 8,
+    color: '#64748b',
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  actionIcon: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  actionText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4b5563',
   },
   legendContainer: {
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
+    marginHorizontal: 12,
+    marginTop: 6,
+    borderRadius: 6,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  legendTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
+    shadowOpacity: 0.02,
+    shadowRadius: 2,
+    elevation: 1,
   },
   legendRow: {
     flexDirection: 'row',
@@ -367,59 +304,86 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   legendText: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
+    fontSize: 8,
+    color: '#64748b',
+    fontWeight: '600',
   },
   tablesSection: {
     flex: 1,
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
+    marginHorizontal: 12,
+    marginTop: 6,
     marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
     elevation: 2,
   },
+  tablesSectionHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: -0.2,
+  },
   tablesGrid: {
-    padding: 16,
+    padding: 12,
+    paddingBottom: 20,
   },
   tableRow: {
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tableTile: {
     borderWidth: 2,
     borderRadius: 12,
-    padding: 12,
-    minHeight: 120,
+    padding: 16,
+    minHeight: 140,
     justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   tileHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   tileNumber: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1f2937',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: -0.5,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   tileContent: {
     alignItems: 'center',
@@ -427,35 +391,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tileIcon: {
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: 32,
+    marginBottom: 6,
   },
   tileStatus: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4b5563',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
   itemBadge: {
-    backgroundColor: '#1f2937',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
     alignSelf: 'center',
-    marginTop: 4,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#374151',
   },
   itemBadgeText: {
     color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   tileFooter: {
     alignItems: 'center',
     marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
   tileAction: {
-    fontSize: 10,
-    color: '#6b7280',
-    fontWeight: '500',
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
