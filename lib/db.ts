@@ -64,6 +64,10 @@ export async function getDb(): Promise<Database> {
       FOREIGN KEY(bill_id) REFERENCES bills(id)
     );
   `);
+  // Attempt to add half_price column if it does not exist (SQLite will throw if it exists)
+  try {
+    await db.execAsync('ALTER TABLE items ADD COLUMN half_price REAL');
+  } catch {}
   return db;
 }
 

@@ -2,13 +2,14 @@ import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-n
 import React from 'react';
 import { router } from 'expo-router';
 import { useOrderStore } from '@/store/order';
+import { useCatalogStore } from '@/store/catalog';
 import { useMemo } from 'react';
 import NavBar from '@/components/NavBar';
 
 const { width: screenWidth } = Dimensions.get('window');
 const tileWidth = (screenWidth - 56) / 3; // 3 columns with more spacing
 
-type Table = { id: number; name: string; status: 'empty' | 'ordering' | 'occupied' };
+type Table = { id: string; name: string; status: 'empty' | 'ordering' | 'occupied' };
 
 const STATUS_CONFIG: Record<Table['status'], {
   color: string;
@@ -129,49 +130,53 @@ const TableTile = ({
 };
 
 // Status Legend Component
-const StatusLegend = () => (
-  <View style={styles.legendContainer}>
-    <View style={styles.legendRow}>
-      {React.Children.toArray(
-        Object.entries(STATUS_CONFIG).map(([_, config]) => (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: config.dot }]} />
-            <Text style={styles.legendText}>{config.label}</Text>
-          </View>
-        ))
-      )}
+const StatusLegend = () => {
+  const data = useMemo(() => Object.entries(STATUS_CONFIG).map(([k, v]) => ({ key: k, config: v })), []);
+  return (
+    <View style={styles.legendContainer}>
+      <View style={styles.legendRow}>
+        <FlatList
+          data={data}
+          keyExtractor={(i) => i.key}
+          horizontal
+          renderItem={({ item }) => (
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: item.config.dot }]} />
+              <Text style={styles.legendText}>{item.config.label}</Text>
+            </View>
+          )}
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
     </View>
-  </View>
-);
-
-const tables: Table[] = Array.from({ length: 12 }).map((_, i) => ({ 
-  id: i + 1, 
-  name: `T${i + 1}`, 
-  status: 'empty' as Table['status']
-}));
+  );
+};
 
 export default function Home() {
   const orders = useOrderStore((s) => s.orders);
+  const catalogTables = useCatalogStore((s) => s.tables);
   
-  const getTableStatus = (id: number): Table['status'] => {
+  const getTableStatus = (id: string): Table['status'] => {
     const order = orders[String(id)];
     const hasItems = order && Object.keys(order.lines).length > 0;
     return hasItems ? 'occupied' : 'empty';
   };
 
-  const getItemCount = (id: number): number => {
+  const getItemCount = (id: string): number => {
     const order = orders[String(id)];
     if (!order) return 0;
     return Object.values(order.lines).reduce((sum: number, line: any) => sum + line.quantity, 0);
   };
 
   const tablesWithStatus = useMemo(() => {
-    return tables.map(table => ({
-      ...table,
-      actualStatus: getTableStatus(table.id),
-      itemCount: getItemCount(table.id)
+    return catalogTables.map((t) => ({
+      id: t.id,
+      name: t.name,
+      status: 'empty' as Table['status'],
+      actualStatus: getTableStatus(t.id),
+      itemCount: getItemCount(t.id)
     }));
-  }, [orders]);
+  }, [catalogTables, orders]);
 
   return (
     <View style={styles.container}>
@@ -194,7 +199,7 @@ export default function Home() {
       {/* Tables Grid */}
       <View style={styles.tablesSection}>
         <View style={styles.tablesSectionHeader}>
-          <Text style={styles.sectionTitle}>Tables ({tables.length})</Text>
+          <Text style={styles.sectionTitle}>Tables ({catalogTables.length})</Text>
         </View>
         <FlatList
           data={tablesWithStatus}
