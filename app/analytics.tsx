@@ -20,7 +20,7 @@ const BarChart = ({ data, height = 160 }: { data: Array<{ key: string; total: nu
           const dayName = new Date(item.key).toLocaleDateString('en', { weekday: 'short' });
           
           return (
-            <View style={styles.barContainer}>
+            <View key={item.key || String(index)} style={styles.barContainer}>
               <View style={styles.barWrapper}>
                 <View style={[styles.bar, { height: barHeight, width: barWidth }]} />
                 <Text style={styles.barValue}>₹{item.total > 0 ? item.total.toFixed(0) : '0'}</Text>
