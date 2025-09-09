@@ -278,14 +278,7 @@ export default function History() {
           renderItem={({ item, index }) => <HistoryCard item={item} index={index} />}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#2563eb']}
-              tintColor="#2563eb"
-            />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563eb"]} tintColor="#2563eb" />}
         />
       ) : (
         <EmptyState

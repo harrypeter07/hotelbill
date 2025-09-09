@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, RefreshControl } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOrderStore } from '@/store/order';
 import { useCatalogStore } from '@/store/catalog';
@@ -15,12 +15,12 @@ const BarChart = ({ data, height = 160 }: { data: Array<{ key: string; total: nu
   return (
     <View style={[styles.chartContainer, { height }]}>
       <View style={styles.chartContent}>
-        {React.Children.toArray(data.map((item, index) => {
+        {data.map((item, index) => {
           const barHeight = Math.max(4, (item.total / maxVal) * (height - 60));
           const dayName = new Date(item.key).toLocaleDateString('en', { weekday: 'short' });
           
-          return (
-            <View key={item.key || String(index)} style={styles.barContainer}>
+          const element = (
+            <View style={styles.barContainer}>
               <View style={styles.barWrapper}>
                 <View style={[styles.bar, { height: barHeight, width: barWidth }]} />
                 <Text style={styles.barValue}>₹{item.total > 0 ? item.total.toFixed(0) : '0'}</Text>
@@ -28,7 +28,8 @@ const BarChart = ({ data, height = 160 }: { data: Array<{ key: string; total: nu
               <Text style={styles.barLabel}>{dayName}</Text>
             </View>
           );
-        }))}
+          return element;
+        })}
       </View>
     </View>
   );
@@ -79,6 +80,7 @@ export default function Analytics() {
   const items = useCatalogStore((s) => s.items);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -96,6 +98,16 @@ export default function Analytics() {
     })();
     return () => { mounted = false; };
   }, []);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const s = await loadAnalytics();
+      setSummary(s);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const dailyTotals = useMemo(() => {
     const now = Date.now();
@@ -126,7 +138,11 @@ export default function Analytics() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <NavBar title="Analytics" />
       
       {/* Header Stats */}

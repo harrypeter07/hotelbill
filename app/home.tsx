@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList, Dimensions, RefreshControl } from 'react-native';
 import React from 'react';
 import { router } from 'expo-router';
 import { useOrderStore } from '@/store/order';
@@ -186,6 +186,16 @@ export default function Home() {
     }));
   }, [catalogTables, orders]);
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await hydrate();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [hydrate]);
+
   return (
     <View style={styles.container}>
       <NavBar title="Home" />
@@ -224,6 +234,7 @@ export default function Home() {
           contentContainerStyle={styles.tablesGrid}
           columnWrapperStyle={styles.tableRow}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       </View>
     </View>

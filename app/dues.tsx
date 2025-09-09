@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
 import React, { useMemo, useState } from 'react';
@@ -229,6 +229,15 @@ export default function DuesDashboard() {
   const dues = useMemo(() => allDues.filter((d) => !d.paid), [allDues]);
 
   React.useEffect(() => { void hydrate(); }, [hydrate]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await hydrate();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [hydrate]);
 
   const filteredAndSortedDues = useMemo(() => {
     let filtered = dues.filter(due => {
@@ -336,6 +345,7 @@ export default function DuesDashboard() {
           )}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       ) : (
         <EmptyState />
