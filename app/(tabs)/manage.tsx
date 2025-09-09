@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView } from 'react-native';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
 import { getItemImageUri } from '@/lib/images';
@@ -16,21 +16,16 @@ export default function Manage() {
   const [tableName, setTableName] = useState('');
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
-  const [itemCategory, setItemCategory] = useState('');
+  // category removed per requirements
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const [editTableId, setEditTableId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-
-  const filteredItems = useMemo(
-    () => items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase())),
-    [items, search]
-  );
+  // search removed per requirements; list will show all items
 
   const clearItemForm = () => {
     setItemName('');
     setItemPrice('');
-    setItemCategory('');
+    // no category field
     setEditItemId(null);
     setError(null);
   };
@@ -57,8 +52,7 @@ export default function Manage() {
     addOrUpdateItem({
       id: editItemId ?? undefined,
       name,
-      price: priceNum,
-      category: itemCategory.trim() || undefined
+      price: priceNum
     });
     
     clearItemForm();
@@ -80,7 +74,7 @@ export default function Manage() {
     setEditItemId(item.id);
     setItemName(item.name);
     setItemPrice(String(item.price));
-    setItemCategory(item.category ?? '');
+    // no category field
     setError(null);
   };
 
@@ -175,16 +169,7 @@ export default function Manage() {
             <Text style={styles.sectionTitle}>Menu Items ({items.length})</Text>
           </View>
 
-          {/* Search */}
-          <View style={styles.searchContainer}>
-            <TextInput
-              placeholder="Search menu items..."
-              value={search}
-              onChangeText={setSearch}
-              style={styles.searchInput}
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
+          {/* Search removed */}
 
           {/* Add/Edit Item Form */}
           <View style={styles.formContainer}>
@@ -207,13 +192,7 @@ export default function Manage() {
                 />
               </View>
               <View style={styles.inputRow}>
-                <TextInput
-                  placeholder="Category (e.g., Main, Breads)"
-                  value={itemCategory}
-                  onChangeText={setItemCategory}
-                  style={[styles.input, styles.flexInput]}
-                  placeholderTextColor="#9ca3af"
-                />
+                {/* Category removed */}
                 <Pressable style={styles.primaryButton} onPress={handleAddUpdateItem}>
                   <Text style={styles.primaryButtonText}>
                     {editItemId ? 'Update' : 'Save'}
@@ -235,18 +214,18 @@ export default function Manage() {
 
           {/* Items List */}
           <View style={styles.listContainer}>
-            {filteredItems.length === 0 ? (
+            {items.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyText}>
-                  {search ? 'No items match your search' : 'No menu items added yet'}
+                  {'No menu items added yet'}
                 </Text>
                 <Text style={styles.emptySubText}>
-                  {search ? 'Try a different search term' : 'Add your first menu item above'}
+                  {'Add your first menu item above'}
                 </Text>
               </View>
             ) : (
               <FlatList
-                data={filteredItems}
+                data={items}
                 keyExtractor={(i) => i.id}
                 renderItem={({ item }) => (
                   <View style={styles.itemCard}>
@@ -258,11 +237,7 @@ export default function Manage() {
                       <View style={styles.itemDetails}>
                         <Text style={styles.itemName}>{item.name}</Text>
                         <Text style={styles.itemPrice}>₹{item.price}</Text>
-                        {item.category && (
-                          <View style={styles.categoryBadge}>
-                            <Text style={styles.categoryText}>{item.category}</Text>
-                          </View>
-                        )}
+                        {/* category badge removed */}
                       </View>
                     </View>
                     <View style={styles.itemActions}>
