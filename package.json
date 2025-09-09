@@ -34,7 +34,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.0",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
@@ -45,12 +45,21 @@
     "@babel/core": "^7.25.2",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.0.10",
-    "@types/react-native": "^0.72.8",
     "@types/react-test-renderer": "^19.1.0",
     "typescript": "~5.8.3"
   },
   "private": true,
   "expo-router": {
     "entry": "app"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["immer"]
+      }
+    },
+    "install": {
+      "exclude": []
+    }
   }
 }

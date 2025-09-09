@@ -1,9 +1,36 @@
+// Top-level build file
+
+buildscript {
+    ext {
+        agp_version = '8.8.2'
+        kotlin_version = '1.9.25'
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:$agp_version")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: "expo-root-project"
+apply plugin: "com.facebook.react.rootproject"
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
     ext {
         // Explicitly set versions here
-        agp_version = '8.5.0'               // Android Gradle Plugin
+        agp_version = '8.8.2'               // Android Gradle Plugin
         kotlin_version = '1.9.25'           // Kotlin version
     }
 
