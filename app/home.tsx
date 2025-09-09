@@ -155,6 +155,14 @@ const StatusLegend = () => {
 export default function Home() {
   const orders = useOrderStore((s) => s.orders);
   const catalogTables = useCatalogStore((s) => s.tables);
+  const hydrated = useCatalogStore((s) => s.hydrated);
+  const hydrate = useCatalogStore((s) => s.hydrate);
+
+  React.useEffect(() => {
+    if (!hydrated) {
+      void hydrate();
+    }
+  }, [hydrated, hydrate]);
   
   const getTableStatus = (id: string): Table['status'] => {
     const order = orders[String(id)];
