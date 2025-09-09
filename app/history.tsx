@@ -25,7 +25,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 // Filter Chip Component
 type FilterChipProps = { label: string; isActive: boolean; onPress: () => void };
-const FilterChip: React.FC<FilterChipProps> = ({ label, isActive, onPress }) => (
+const FilterChip: React.FC<FilterChipProps & { testID?: string }> = ({ label, isActive, onPress }) => (
   <Pressable
     style={[styles.filterChip, isActive && styles.filterChipActive]}
     onPress={onPress}
@@ -251,13 +251,15 @@ export default function History() {
             </View>
             
             <View style={styles.filterChipsContainer}>
-              {React.Children.toArray(statusOptions.map(status => (
-                <FilterChip
-                  label={status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
-                  isActive={statusFilter === status}
-                  onPress={() => setStatusFilter(status)}
-                />
-              )))}
+              {React.Children.toArray(
+                statusOptions.map((status) => (
+                  <FilterChip
+                    label={status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
+                    isActive={statusFilter === status}
+                    onPress={() => setStatusFilter(status)}
+                  />
+                ))
+              )}
             </View>
           </View>
         </>
