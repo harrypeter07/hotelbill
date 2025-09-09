@@ -3,7 +3,16 @@
   "version": "1.0.0",
   "main": "index.ts",
   "expo": {
-    "scheme": "hotelwaiter"
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "immer"
+        ]
+      }
+    },
+    "install": {
+      "exclude": []
+    }
   },
   "scripts": {
     "start": "expo start",
@@ -34,7 +43,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.0",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-reanimated": "~3.16.1",
+    "react-native-reanimated": "3.19.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
@@ -51,15 +60,5 @@
   "private": true,
   "expo-router": {
     "entry": "app"
-  },
-  "expo": {
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": ["immer"]
-      }
-    },
-    "install": {
-      "exclude": []
-    }
   }
 }
