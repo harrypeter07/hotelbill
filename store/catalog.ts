@@ -70,62 +70,82 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }
   },
   addOrUpdateTable: (table) =>
-    set(async (s) => {
+    set((s) => {
       const id = ensureId(table.id);
       const existingIdx = s.tables.findIndex((t) => t.id === id);
       const next: TableInfo = { id, name: table.name };
-      const db = await getDb();
-      await db.runAsync('INSERT OR REPLACE INTO tables (id, name, status) VALUES (?, ?, ?)', [id, next.name, 'empty']);
-      if (existingIdx >= 0) {
-        const copy = s.tables.slice();
-        copy[existingIdx] = next;
-        return { tables: copy } as CatalogState;
-      }
-      return { tables: [...s.tables, next] } as CatalogState;
+
+      // Optimistically update state immediately
+      const updatedTables = existingIdx >= 0
+        ? (() => { const copy = s.tables.slice(); copy[existingIdx] = next; return copy; })()
+        : [...s.tables, next];
+
+      // Persist in background
+      (async () => {
+        try {
+          const db = await getDb();
+          await db.runAsync('INSERT OR REPLACE INTO tables (id, name, status) VALUES (?, ?, ?)', [id, next.name, 'empty']);
+        } catch (error) {
+          console.error('addOrUpdateTable persist error:', error);
+        }
+      })();
+
+      return { tables: updatedTables } as CatalogState;
     }),
   removeTable: (id) =>
-    set(async (s) => {
-      try {
-        console.log('Catalog store: Removing table with id:', id);
-        const db = await getDb();
-        const result = await db.runAsync('DELETE FROM tables WHERE id = ?', [id]);
-        console.log('Database delete result:', result);
-        const newTables = s.tables.filter((t) => t.id !== id);
-        console.log('New tables array length:', newTables.length);
-        return { tables: newTables } as CatalogState;
-      } catch (error) {
-        console.error('Error in removeTable:', error);
-        throw error;
-      }
+    set((s) => {
+      const newTables = s.tables.filter((t) => t.id !== id);
+
+      // Persist in background
+      (async () => {
+        try {
+          const db = await getDb();
+          await db.runAsync('DELETE FROM tables WHERE id = ?', [id]);
+        } catch (error) {
+          console.error('removeTable persist error:', error);
+        }
+      })();
+
+      return { tables: newTables } as CatalogState;
     }),
   addOrUpdateItem: (item) =>
-    set(async (s) => {
+    set((s) => {
       const id = ensureId(item.id);
       const existingIdx = s.items.findIndex((t) => t.id === id);
       const next: CatalogItem = { id, name: item.name, price: Number(item.price), half_price: item.half_price != null ? Number(item.half_price) : null, category: item.category };
-      const db = await getDb();
-      await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, half_price, category) VALUES (?, ?, ?, ?, ?)', [id, next.name, next.price, next.half_price, next.category ?? null]);
-      if (existingIdx >= 0) {
-        const copy = s.items.slice();
-        copy[existingIdx] = next;
-        return { items: copy } as CatalogState;
-      }
-      return { items: [...s.items, next] } as CatalogState;
+
+      // Optimistic update
+      const updatedItems = existingIdx >= 0
+        ? (() => { const copy = s.items.slice(); copy[existingIdx] = next; return copy; })()
+        : [...s.items, next];
+
+      // Persist in background
+      (async () => {
+        try {
+          const db = await getDb();
+          await db.runAsync('INSERT OR REPLACE INTO items (id, name, price, half_price, category) VALUES (?, ?, ?, ?, ?)', [id, next.name, next.price, next.half_price, next.category ?? null]);
+        } catch (error) {
+          console.error('addOrUpdateItem persist error:', error);
+        }
+      })();
+
+      return { items: updatedItems } as CatalogState;
     }),
   removeItem: (id) =>
-    set(async (s) => {
-      try {
-        console.log('Catalog store: Removing item with id:', id);
-        const db = await getDb();
-        const result = await db.runAsync('DELETE FROM items WHERE id = ?', [id]);
-        console.log('Database delete result:', result);
-        const newItems = s.items.filter((t) => t.id !== id);
-        console.log('New items array length:', newItems.length);
-        return { items: newItems } as CatalogState;
-      } catch (error) {
-        console.error('Error in removeItem:', error);
-        throw error;
-      }
+    set((s) => {
+      const newItems = s.items.filter((t) => t.id !== id);
+
+      // Persist in background
+      (async () => {
+        try {
+          const db = await getDb();
+          await db.runAsync('DELETE FROM items WHERE id = ?', [id]);
+        } catch (error) {
+          console.error('removeItem persist error:', error);
+        }
+      })();
+
+      return { items: newItems } as CatalogState;
     }),
 }));
 
