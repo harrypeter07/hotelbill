@@ -324,7 +324,15 @@ const OrderDetailModal = ({
   order: HistoryRow | null; 
   onClose: () => void; 
 }) => {
-  if (!order) return null;
+  console.log('🎭 OrderDetailModal rendered with:', {
+    visible,
+    order: order ? JSON.stringify(order, null, 2) : 'null'
+  });
+  
+  if (!order) {
+    console.log('❌ No order data provided to modal');
+    return null;
+  }
 
   const formatDate = (dateStr: string) => {
     try {
