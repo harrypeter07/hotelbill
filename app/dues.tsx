@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator, RefreshControl, Modal, Image, ScrollView } from 'react-native';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
 import React, { useMemo, useState } from 'react';
+import { loadHistory } from '@/lib/transactions';
 
 type Due = { 
   id: string; 
@@ -93,14 +94,109 @@ const SortOptions = ({
   </View>
 );
 
+// Detailed Bill View Modal
+const BillDetailModal = ({ 
+  visible, 
+  onClose, 
+  bill 
+}: { 
+  visible: boolean; 
+  onClose: () => void; 
+  bill: any; 
+}) => {
+  if (!bill) return null;
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Bill Details</Text>
+          <Pressable onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </Pressable>
+        </View>
+        
+        <ScrollView style={styles.modalContent}>
+          {/* Customer Info */}
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}>Customer Information</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Name:</Text>
+              <Text style={styles.detailValue}>{bill.customer_name || 'Walk-in Customer'}</Text>
+            </View>
+            {bill.customer_phone && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Phone:</Text>
+                <Text style={styles.detailValue}>{bill.customer_phone}</Text>
+              </View>
+            )}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Table:</Text>
+              <Text style={styles.detailValue}>{bill.table_id || 'N/A'}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date:</Text>
+              <Text style={styles.detailValue}>{new Date(bill.created_at).toLocaleString()}</Text>
+            </View>
+          </View>
+
+          {/* Order Items */}
+          {bill.items && bill.items.length > 0 && (
+            <View style={styles.detailSection}>
+              <Text style={styles.sectionTitle}>Order Items</Text>
+              {bill.items.map((item: any, index: number) => (
+                <View key={index} style={styles.itemRow}>
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                  </View>
+                  <Text style={styles.itemPrice}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Bill Summary */}
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}>Bill Summary</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Subtotal:</Text>
+              <Text style={styles.detailValue}>₹{bill.subtotal?.toFixed(2) || '0.00'}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Tax:</Text>
+              <Text style={styles.detailValue}>₹{bill.tax?.toFixed(2) || '0.00'}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Discount:</Text>
+              <Text style={styles.detailValue}>₹{bill.discount?.toFixed(2) || '0.00'}</Text>
+            </View>
+            <View style={[styles.detailRow, styles.totalRow]}>
+              <Text style={styles.totalLabel}>Total:</Text>
+              <Text style={styles.totalValue}>₹{bill.total?.toFixed(2) || '0.00'}</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+};
+
 // Due Card Component
 const DueCard = ({ 
   item, 
   onMarkPaid, 
+  onViewDetails,
   loading 
 }: { 
   item: Due; 
   onMarkPaid: (id: string) => void;
+  onViewDetails: (item: Due) => void;
   loading: boolean;
 }) => {
   const formatDate = (dateStr: string) => {
@@ -142,42 +238,60 @@ const DueCard = ({
   const isUrgent = daysOverdue > 7;
 
   return (
-    <View style={[styles.dueCard, isUrgent && styles.urgentCard]}>
+    <Pressable 
+      style={[styles.dueCard, isUrgent && styles.urgentCard]}
+      onPress={() => onViewDetails(item)}
+    >
       {isUrgent && (
         <View style={styles.urgentBadge}>
           <Text style={styles.urgentText}>⚠️ {daysOverdue} days overdue</Text>
         </View>
       )}
       
-      <View style={styles.cardHeader}>
-        <View style={styles.customerInfo}>
-          <Text style={styles.customerName}>
-            {item.name || 'Walk-in Customer'}
-          </Text>
-          {item.phone && (
-            <Text style={styles.customerPhone}>📞 {item.phone}</Text>
-          )}
-        </View>
-        <View style={styles.amountContainer}>
-          <Text style={styles.amountValue}>₹{item.amount.toFixed(2)}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardDetails}>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Table:</Text>
-          <Text style={styles.detailValue}>{item.table || 'N/A'}</Text>
-        </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Date:</Text>
-          <Text style={styles.detailValue}>{formatDate(item.date)}</Text>
-        </View>
-        {item.id && (
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Order ID:</Text>
-            <Text style={styles.detailValue}>#{item.id.slice(-6).toUpperCase()}</Text>
+      <View style={styles.cardContent}>
+        {/* Image on the left */}
+        {item.photoUri && (
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: item.photoUri }} 
+              style={styles.itemImage}
+              resizeMode="cover"
+            />
           </View>
         )}
+        
+        <View style={styles.cardInfo}>
+          <View style={styles.cardHeader}>
+            <View style={styles.customerInfo}>
+              <Text style={styles.customerName}>
+                {item.name || 'Walk-in Customer'}
+              </Text>
+              {item.phone && (
+                <Text style={styles.customerPhone}>📞 {item.phone}</Text>
+              )}
+            </View>
+            <View style={styles.amountContainer}>
+              <Text style={styles.amountValue}>₹{item.amount.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.cardDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Table:</Text>
+              <Text style={styles.detailValue}>{item.table || 'N/A'}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date:</Text>
+              <Text style={styles.detailValue}>{formatDate(item.date)}</Text>
+            </View>
+            {item.id && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Order ID:</Text>
+                <Text style={styles.detailValue}>#{item.id.slice(-6).toUpperCase()}</Text>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
 
       <View style={styles.cardActions}>
@@ -199,7 +313,7 @@ const DueCard = ({
           </Pressable>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -225,6 +339,8 @@ export default function DuesDashboard() {
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedBill, setSelectedBill] = useState<any>(null);
+  const [showBillModal, setShowBillModal] = useState(false);
 
   const dues = useMemo(() => allDues.filter((d) => !d.paid), [allDues]);
 
