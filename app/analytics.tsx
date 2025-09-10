@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, Dimensions, RefreshControl } from 'react-native';
+import { COLORS } from '@/lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOrderStore } from '@/store/order';
 import { useCatalogStore } from '@/store/catalog';
@@ -262,7 +263,7 @@ export default function Analytics() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.background,
   },
   section: {
     paddingHorizontal: 16,
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     marginBottom: 16,
   },
   metricsGrid: {
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     padding: 16,
     borderRadius: 12,
     shadowColor: '#000',
@@ -311,21 +312,21 @@ const styles = StyleSheet.create({
   metricTitle: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     marginBottom: 2,
   },
   metricValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
   },
   metricSubtitle: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: COLORS.textSecondary,
     marginTop: 1,
   },
   chartContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -349,23 +350,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bar: {
-    backgroundColor: '#6366f1',
+    backgroundColor: COLORS.accent,
     borderRadius: 4,
     minHeight: 4,
   },
   barValue: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#4b5563',
+    color: COLORS.textSecondary,
     marginTop: 4,
   },
   barLabel: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -382,25 +383,25 @@ const styles = StyleSheet.create({
   },
   dataRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: COLORS.border,
   },
   dataLabel: {
     fontSize: 14,
-    color: '#4b5563',
+    color: COLORS.textSecondary,
     fontWeight: '500',
     flex: 1,
   },
   dataValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
   },
   skeletonContainer: {
     padding: 16,
   },
   skeleton: {
     height: 60,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: COLORS.muted,
     borderRadius: 8,
     marginBottom: 12,
   },
