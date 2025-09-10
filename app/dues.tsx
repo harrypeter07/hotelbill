@@ -167,23 +167,33 @@ const BillDetailModal = ({
               </View>
               
               {/* Table Rows */}
-              {bill.items.map((item: any, index: number) => (
-                <View key={index} style={styles.tableRow}>
-                  <View style={styles.itemCell}>
-                    <View style={styles.itemImageContainer}>
-                      <Image 
-                        source={{ uri: item.photoUri || `https://source.unsplash.com/100x100/?${encodeURIComponent(item.name)} indian cooked food` }} 
-                        style={styles.itemImage}
-                        resizeMode="cover"
-                      />
+              {bill.items.map((item: any, index: number) => {
+                const imageUri = item.photoUri || `https://source.unsplash.com/100x100/?${encodeURIComponent(item.name)} indian cooked food`;
+                console.log('🍽️ Rendering due item:', item.name, 'with image:', imageUri);
+                return (
+                  <View key={index} style={styles.tableRow}>
+                    <View style={styles.itemCell}>
+                      <View style={styles.itemImageContainer}>
+                        <Image 
+                          source={{ uri: imageUri }} 
+                          style={styles.itemImage}
+                          resizeMode="cover"
+                          onError={(error) => {
+                            console.log('❌ Image load error for due item', item.name, ':', error.nativeEvent.error);
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Image loaded successfully for due item', item.name);
+                          }}
+                        />
+                      </View>
+                      <Text style={styles.itemName}>{item.name}</Text>
                     </View>
-                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.quantityCell}>{item.quantity}</Text>
+                    <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
+                    <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
                   </View>
-                  <Text style={styles.quantityCell}>{item.quantity}</Text>
-                  <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
-                  <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
-                </View>
-              ))}
+                );
+              })}
             </View>
           )}
 

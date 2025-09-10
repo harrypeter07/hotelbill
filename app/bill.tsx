@@ -143,13 +143,17 @@ export default function Bill() {
           onPress: async () => {
             setLoading(true);
             try {
-              await savePaidBill({
+              const paidBillData = {
                 tableId,
                 waiterId: null,
                 lines,
                 taxPct: Number(taxPct) || 0,
                 discountPct: Number(discountPct) || 0,
-              });
+              };
+              console.log('💾 Saving paid bill with data:', JSON.stringify(paidBillData, null, 2));
+              
+              await savePaidBill(paidBillData);
+              console.log('✅ Paid bill saved successfully');
               clear(tableId);
               router.replace('/(tabs)/home');
             } catch (error) {

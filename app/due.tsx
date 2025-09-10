@@ -226,7 +226,7 @@ export default function DuePayment() {
             setLoading(true);
             try {
               if (tableOrder && tableId) {
-                await saveDueBill({
+                const dueBillData = {
                   tableId,
                   lines: Object.values(tableOrder.lines),
                   taxPct: tableOrder.taxPct || 0,
@@ -234,7 +234,11 @@ export default function DuePayment() {
                   dueName: name || null,
                   duePhone: phone || null,
                   photoUri: photoUri || null,
-                });
+                };
+                console.log('💾 Saving due bill with data:', JSON.stringify(dueBillData, null, 2));
+                
+                await saveDueBill(dueBillData);
+                console.log('✅ Due bill saved successfully');
 
                 addDue({ 
                   name: name || undefined, 
