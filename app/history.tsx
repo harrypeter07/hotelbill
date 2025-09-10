@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ActivityIndicator, RefreshControl, Modal, ScrollView, Image } from 'react-native';
+import RobustImage from '@/components/RobustImage';
 import React, { useEffect, useState, useMemo } from 'react';
 import NavBar from '@/components/NavBar';
 import { loadHistory, type HistoryRow } from '@/lib/transactions';
@@ -349,12 +350,8 @@ const OrderDetailModal = ({
     }
   };
 
-  // Mock items data - in real app this would come from the order
-  const mockItems = [
-    { name: 'Chicken Curry', quantity: 2, price: 180, photoUri: 'https://source.unsplash.com/100x100/?chicken curry indian cooked food' },
-    { name: 'Naan Bread', quantity: 4, price: 15, photoUri: 'https://source.unsplash.com/100x100/?naan bread indian cooked food' },
-    { name: 'Dal Tadka', quantity: 1, price: 60, photoUri: 'https://source.unsplash.com/100x100/?dal tadka indian cooked food' },
-  ];
+  // TODO: fetch real items by order.order_id if needed
+  const items = [] as Array<{ name: string; quantity: number; price: number }>;
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -401,32 +398,23 @@ const OrderDetailModal = ({
             </View>
             
             {/* Table Rows */}
-            {mockItems.map((item, index) => {
-              console.log('🍽️ Rendering item:', item.name, 'with image:', item.photoUri);
-              return (
-                <View key={index} style={styles.tableRow}>
-                  <View style={styles.itemCell}>
-                    <View style={styles.itemImageContainer}>
-                      <Image 
-                        source={{ uri: item.photoUri }} 
-                        style={styles.itemImage}
-                        resizeMode="cover"
-                        onError={(error) => {
-                          console.log('❌ Image load error for', item.name, ':', error.nativeEvent.error);
-                        }}
-                        onLoad={() => {
-                          console.log('✅ Image loaded successfully for', item.name);
-                        }}
-                      />
-                    </View>
-                    <Text style={styles.itemName}>{item.name}</Text>
+            {items.map((item, index) => (
+              <View key={`${item.name}-${index}`} style={styles.tableRow}>
+                <View style={styles.itemCell}>
+                  <View style={styles.itemImageContainer}>
+                    <RobustImage
+                      itemName={item.name}
+                      style={styles.itemImage}
+                      fallbackText={item.name?.charAt(0)?.toUpperCase?.() || '?'}
+                    />
                   </View>
-                  <Text style={styles.quantityCell}>{item.quantity}</Text>
-                  <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
-                  <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+                  <Text style={styles.itemName}>{item.name}</Text>
                 </View>
-              );
-            })}
+                <Text style={styles.quantityCell}>{item.quantity}</Text>
+                <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
+                <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Order Summary */}
