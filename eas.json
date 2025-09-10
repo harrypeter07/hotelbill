@@ -3,8 +3,8 @@
   "build": {
     "preview": {
       "android": { 
-        "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleRelease",
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
         "env": {
           "EAS_SKIP_AUTO_FINGERPRINT": "1"
         }
