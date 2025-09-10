@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Pressable, FlatList, Dimensions, RefreshControl } from 'react-native';
+import { COLORS } from '@/lib/theme';
 import React from 'react';
 import { router } from 'expo-router';
 import { useOrderStore } from '@/store/order';
@@ -244,12 +245,12 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#000000',
+    borderBottomColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -263,24 +264,24 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
+    color: COLORS.textPrimary,
     marginBottom: 1,
     letterSpacing: -0.2,
   },
   headerSubtitle: {
     fontSize: 10,
-    color: '#64748b',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 12,
     marginTop: 6,
     borderRadius: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -294,23 +295,23 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#0f172a',
+    color: COLORS.textPrimary,
     marginBottom: 1,
     letterSpacing: -0.2,
   },
   statLabel: {
     fontSize: 8,
-    color: '#64748b',
+    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   legendContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 12,
     marginTop: 6,
     borderRadius: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -335,18 +336,18 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 8,
-    color: '#64748b',
+    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   tablesSection: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 12,
     marginTop: 6,
     marginBottom: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -357,12 +358,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: COLORS.border,
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0f172a',
+    color: COLORS.textPrimary,
     letterSpacing: -0.2,
   },
   tablesGrid: {
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   tileNumber: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
+    color: COLORS.textPrimary,
     letterSpacing: -0.5,
   },
   statusDot: {
@@ -418,22 +419,22 @@ const styles = StyleSheet.create({
   tileStatus: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0f172a',
+    color: COLORS.textPrimary,
     textAlign: 'center',
     letterSpacing: -0.2,
   },
   itemBadge: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'center',
     marginTop: 6,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: COLORS.border,
   },
   itemBadgeText: {
-    color: '#ffffff',
+    color: COLORS.textPrimary,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.2,
@@ -443,11 +444,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.1)',
+    borderTopColor: COLORS.border,
   },
   tileAction: {
     fontSize: 11,
-    color: '#64748b',
+    color: COLORS.textSecondary,
     fontWeight: '600',
     textAlign: 'center',
   },
