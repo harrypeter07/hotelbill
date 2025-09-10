@@ -95,13 +95,28 @@ export async function saveDueBill(params: {
 export type HistoryRow = { id: string; table: string; date: string; total: number; status: string };
 
 export async function loadHistory(limit = 50): Promise<HistoryRow[]> {
+  console.log('📚 Loading history with limit:', limit);
   const db = await getDb();
   const rows = await db.getAllAsync<{
     id: string; order_id: string; total: number; status: string; created_at: number; table_id: string;
   }>(
     'SELECT b.id, b.order_id, b.total, b.status, b.created_at, o.table_id FROM bills b JOIN orders o ON b.order_id = o.id ORDER BY b.created_at DESC LIMIT ?',[limit]
   );
-  return rows.map((r) => ({ id: r.id, table: r.table_id, date: new Date(r.created_at).toLocaleString(), total: r.total, status: r.status }));
+  console.log('📚 Raw history rows from DB:', rows.length, 'entries');
+  console.log('📚 Sample history row:', rows[0]);
+  
+  const mappedRows = rows.map((r) => ({ 
+    id: r.id, 
+    table: r.table_id, 
+    date: new Date(r.created_at).toLocaleString(), 
+    total: r.total, 
+    status: r.status 
+  }));
+  
+  console.log('📚 Mapped history rows:', mappedRows.length, 'entries');
+  console.log('📚 Sample mapped row:', mappedRows[0]);
+  
+  return mappedRows;
 }
 
 export type AnalyticsSummary = {
