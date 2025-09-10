@@ -491,62 +491,64 @@ export default function DuesDashboard() {
   return (
     <View style={styles.container}>
       <NavBar title="Dues Management" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Outstanding Dues</Text>
-        <Text style={styles.headerSubtitle}>
-          {filteredAndSortedDues.length} of {dues.length} dues
-        </Text>
-      </View>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Outstanding Dues</Text>
+          <Text style={styles.headerSubtitle}>
+            {filteredAndSortedDues.length} of {dues.length} dues
+          </Text>
+        </View>
 
-      {dues.length > 0 && (
-        <>
-          {/* Summary Stats */}
-          <DuesSummary dues={dues} />
+        {dues.length > 0 && (
+          <>
+            {/* Summary Stats */}
+            <DuesSummary dues={dues} />
 
-          {/* Search and Sort */}
-          <View style={styles.controlsContainer}>
-            <View style={styles.searchContainer}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search by name, phone, table, or order ID..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor="#9ca3af"
+            {/* Search and Sort */}
+            <View style={styles.controlsContainer}>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search by name, phone, table, or order ID..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+              
+              <SortOptions
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
               />
             </View>
-            
-            <SortOptions
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-            />
-          </View>
-        </>
-      )}
+          </>
+        )}
 
-      {/* Dues List */}
-      {filteredAndSortedDues.length > 0 ? (
-        <FlatList
-          data={filteredAndSortedDues}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <DueCard
-              item={item}
-              onMarkPaid={handleMarkPaid}
-              onViewDetails={handleViewDetails}
-              loading={loadingId === item.id}
-            />
-          )}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        />
-      ) : (
-        <EmptyState />
-      )}
+        {/* Dues List */}
+        {filteredAndSortedDues.length > 0 ? (
+          <View style={{ paddingHorizontal: 16 }}>
+            {filteredAndSortedDues.map((item) => (
+              <DueCard
+                key={item.id}
+                item={item}
+                onMarkPaid={handleMarkPaid}
+                onViewDetails={handleViewDetails}
+                loading={loadingId === item.id}
+              />
+            ))}
+          </View>
+        ) : (
+          <EmptyState />
+        )}
+      </ScrollView>
 
       {/* Bill Detail Modal */}
       <BillDetailModal
@@ -975,10 +977,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  itemImage: {
-    width: '100%',
-    height: '100%',
-  },
+  // duplicate removed
   quantityCell: {
     flex: 1,
     fontSize: 12,
