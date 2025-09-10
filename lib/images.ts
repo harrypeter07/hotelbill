@@ -60,9 +60,8 @@ export async function getUnsplashFoodUri(name: string): Promise<string> {
   }
   
   try {
-    // Enhance with Indian cuisine context
-    const enhancedName = enhanceFoodNameForIndianCuisine(cleanName);
-    const query = encodeURIComponent(`${enhancedName} food meal dish restaurant cooking`);
+    // Add indian to the query for Indian food images
+    const query = encodeURIComponent(`${cleanName} indian food meal dish restaurant cooking`);
     const page = (seed % 3) + 1; // Use different pages for variety
     
     const params = new URLSearchParams({
@@ -109,9 +108,8 @@ export function getUnsplashFoodUriSync(name: string): string {
   const cleanName = (name || 'food').toLowerCase().trim();
   const seed = stableNumberFromString(cleanName);
   
-  // Enhance with Indian cuisine context
-  const enhancedName = enhanceFoodNameForIndianCuisine(cleanName);
-  return `https://source.unsplash.com/200x200/?${encodeURIComponent(enhancedName + ' food meal dish')}&sig=${seed}`;
+  // Add indian to the query for Indian food images
+  return `https://source.unsplash.com/200x200/?${encodeURIComponent(cleanName + ' indian food meal dish')}&sig=${seed}`;
 }
 
 // Fallback image sources - all food-specific with exact food name
