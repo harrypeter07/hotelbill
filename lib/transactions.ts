@@ -92,7 +92,7 @@ export async function saveDueBill(params: {
   return { id: billId };
 }
 
-export type HistoryRow = { id: string; table: string; date: string; total: number; status: string };
+export type HistoryRow = { id: string; table: string; date: string; total: number; status: string; order_id: string };
 
 export async function loadHistory(limit = 50): Promise<HistoryRow[]> {
   console.log('📚 Loading history with limit:', limit);
@@ -110,13 +110,27 @@ export async function loadHistory(limit = 50): Promise<HistoryRow[]> {
     table: r.table_id, 
     date: new Date(r.created_at).toLocaleString(), 
     total: r.total, 
-    status: r.status 
+    status: r.status,
+    order_id: r.order_id,
   }));
   
   console.log('📚 Mapped history rows:', mappedRows.length, 'entries');
   console.log('📚 Sample mapped row:', mappedRows[0]);
   
   return mappedRows;
+}
+
+export type OrderItemRow = { name: string; price: number; quantity: number };
+
+export async function loadOrderItems(orderId: string): Promise<OrderItemRow[]> {
+  console.log('🍽️ Loading order items for orderId:', orderId);
+  const db = await getDb();
+  const rows = await db.getAllAsync<OrderItemRow>(
+    'SELECT name, price, quantity FROM order_items WHERE order_id = ? ORDER BY name ASC',
+    [orderId]
+  );
+  console.log('🍽️ Loaded order items:', rows.length);
+  return rows;
 }
 
 export type AnalyticsSummary = {

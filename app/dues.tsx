@@ -171,12 +171,12 @@ const BillDetailModal = ({
                 const imageUri = item.photoUri || `https://source.unsplash.com/100x100/?${encodeURIComponent(item.name)} indian cooked food`;
                 console.log('🍽️ Rendering due item:', item.name, 'with image:', imageUri);
                 return (
-                  <View key={index} style={styles.tableRow}>
+                  <View key={`${item.name}-${index}`} style={styles.tableRow}>
                     <View style={styles.itemCell}>
                       <View style={styles.itemImageContainer}>
                         <Image 
                           source={{ uri: imageUri }} 
-                          style={styles.itemImage}
+                          style={styles.tableItemImage}
                           resizeMode="cover"
                           onError={(error) => {
                             console.log('❌ Image load error for due item', item.name, ':', error.nativeEvent.error);
@@ -455,8 +455,10 @@ export default function DuesDashboard() {
       console.log('📚 History data loaded:', history.length, 'entries');
       console.log('📚 History sample:', history.slice(0, 2));
       
-      const bill = history.find(h => h.id === due.id);
-      console.log('🔍 Looking for bill with ID:', due.id);
+      // Match using billId if present, otherwise fallback to bill id
+      const targetBillId = (due as any).billId || due.id;
+      const bill = history.find(h => h.id === targetBillId);
+      console.log('🔍 Looking for bill with ID:', targetBillId);
       console.log('🔍 Found bill:', bill ? 'YES' : 'NO');
       
       if (bill) {
@@ -705,6 +707,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  tableItemImage: {
     width: '100%',
     height: '100%',
   },
