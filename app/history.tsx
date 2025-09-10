@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, TextInput, ActivityIndicator, RefreshControl, Modal, ScrollView, Image } from 'react-native';
 import React, { useEffect, useState, useMemo } from 'react';
 import NavBar from '@/components/NavBar';
 import { loadHistory, type HistoryRow } from '@/lib/transactions';
@@ -37,7 +37,7 @@ const FilterChip: React.FC<FilterChipProps & { testID?: string }> = ({ label, is
 );
 
 // History Card Component
-const HistoryCard = ({ item, index }: { item: HistoryRow; index: number }) => {
+const HistoryCard = ({ item, index, onViewOrder }: { item: HistoryRow; index: number; onViewOrder?: (order: HistoryRow) => void }) => {
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
@@ -70,7 +70,10 @@ const HistoryCard = ({ item, index }: { item: HistoryRow; index: number }) => {
   };
 
   return (
-    <View style={[styles.historyCard, { marginTop: index === 0 ? 0 : 4 }]}>
+    <Pressable 
+      style={[styles.historyCard, { marginTop: index === 0 ? 0 : 4 }]}
+      onPress={() => onViewOrder && onViewOrder(item)}
+    >
       <View style={styles.cardHeader}>
         <View style={styles.tableInfo}>
           <View style={styles.tableNameContainer}>
@@ -96,7 +99,7 @@ const HistoryCard = ({ item, index }: { item: HistoryRow; index: number }) => {
           </View>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -163,6 +166,8 @@ export default function History() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<HistoryRow | null>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
 
   const loadData = async (isRefresh = false) => {
     try {
@@ -203,6 +208,16 @@ export default function History() {
 
   const onRefresh = () => {
     loadData(true);
+  };
+
+  const handleViewOrder = (order: HistoryRow) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  };
+
+  const closeOrderModal = () => {
+    setShowOrderModal(false);
+    setSelectedOrder(null);
   };
 
   if (loading && rows.length === 0) {
@@ -251,7 +266,7 @@ export default function History() {
             </View>
             
             <View style={styles.filterChipsContainer}>
-              <FlatList
+      <FlatList
                 data={statusOptions}
                 keyExtractor={(s) => s}
                 horizontal
@@ -275,7 +290,7 @@ export default function History() {
         <FlatList
           data={filteredData}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => <HistoryCard item={item} index={index} />}
+          renderItem={({ item, index }) => <HistoryCard item={item} index={index} onViewOrder={handleViewOrder} />}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563eb"]} tintColor="#2563eb" />}
@@ -288,6 +303,13 @@ export default function History() {
           onRetry={() => loadData()}
         />
       )}
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        visible={showOrderModal}
+        order={selectedOrder}
+        onClose={closeOrderModal}
+      />
     </View>
   );
 }

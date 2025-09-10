@@ -149,13 +149,31 @@ const BillDetailModal = ({
           {bill.items && bill.items.length > 0 && (
             <View style={styles.detailSection}>
               <Text style={styles.sectionTitle}>Order Items</Text>
+              
+              {/* Table Header */}
+              <View style={styles.tableHeader}>
+                <Text style={styles.tableHeaderText}>Item</Text>
+                <Text style={styles.tableHeaderText}>Qty</Text>
+                <Text style={styles.tableHeaderText}>Price</Text>
+                <Text style={styles.tableHeaderText}>Total</Text>
+              </View>
+              
+              {/* Table Rows */}
               {bill.items.map((item: any, index: number) => (
-                <View key={index} style={styles.itemRow}>
-                  <View style={styles.itemInfo}>
+                <View key={index} style={styles.tableRow}>
+                  <View style={styles.itemCell}>
+                    <View style={styles.itemImageContainer}>
+                      <Image 
+                        source={{ uri: item.photoUri || `https://source.unsplash.com/100x100/?${encodeURIComponent(item.name)} indian cooked food` }} 
+                        style={styles.itemImage}
+                        resizeMode="cover"
+                      />
+                    </View>
                     <Text style={styles.itemName}>{item.name}</Text>
-                    <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
                   </View>
-                  <Text style={styles.itemPrice}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+                  <Text style={styles.quantityCell}>{item.quantity}</Text>
+                  <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
+                  <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
                 </View>
               ))}
             </View>
@@ -869,5 +887,69 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: '#059669',
+  },
+  // Table styles
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: '#e2e8f0',
+    marginBottom: 8,
+  },
+  tableHeaderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
+    textAlign: 'center',
+    flex: 1,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  itemCell: {
+    flex: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  itemImageContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  quantityCell: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  priceCell: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#059669',
+    textAlign: 'center',
+  },
+  totalCell: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1f2937',
+    textAlign: 'center',
   },
 });
