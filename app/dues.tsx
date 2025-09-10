@@ -104,7 +104,15 @@ const BillDetailModal = ({
   onClose: () => void; 
   bill: any; 
 }) => {
-  if (!bill) return null;
+  console.log('🎭 BillDetailModal rendered with:', {
+    visible,
+    bill: bill ? JSON.stringify(bill, null, 2) : 'null'
+  });
+  
+  if (!bill) {
+    console.log('❌ No bill data provided to modal');
+    return null;
+  }
 
   return (
     <Modal
