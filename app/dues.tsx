@@ -408,6 +408,20 @@ export default function DuesDashboard() {
     );
   };
 
+  const handleViewDetails = async (due: Due) => {
+    try {
+      // Load detailed bill information
+      const history = await loadHistory();
+      const bill = history.find(h => h.id === due.id);
+      setSelectedBill(bill || due);
+      setShowBillModal(true);
+    } catch (error) {
+      // Fallback to basic due info
+      setSelectedBill(due);
+      setShowBillModal(true);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <NavBar title="Dues Management" />
