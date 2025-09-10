@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, View, Text, StyleSheet, ImageProps } from 'react-native';
-import { getItemImageUri, getItemImageUriFallback, getFoodishImageUri } from '@/lib/images';
+import { getItemImageUri, getItemImageUriFallback, getFoodishImageUri, getUnsplashFoodUriSync, getUnsplashFoodUri } from '@/lib/images';
 
 interface RobustImageProps extends Omit<ImageProps, 'source'> {
   itemName: string;
@@ -17,10 +17,54 @@ export default function RobustImage({
 }: RobustImageProps) {
   const [imageError, setImageError] = useState(false);
   const [fallbackIndex, setFallbackIndex] = useState(0);
+  const [currentImageUri, setCurrentImageUri] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load the appropriate image based on fallback index
+  useEffect(() => {
+    const loadImage = async () => {
+      setIsLoading(true);
+      setImageError(false);
+      
+      try {
+        let imageUri: string | null = null;
+        
+        if (fallbackIndex === 0) {
+          // Try Unsplash sync first for high-quality food images with exact name
+          imageUri = getUnsplashFoodUriSync(itemName);
+        } else if (fallbackIndex === 1) {
+          // Try Unsplash async API for better results
+          try {
+            imageUri = await getUnsplashFoodUri(itemName);
+          } catch (error) {
+            // Fallback to sync version
+            imageUri = getUnsplashFoodUriSync(itemName);
+          }
+        } else if (fallbackIndex === 2) {
+          // Then try LoremFlickr with exact food name
+          imageUri = getItemImageUri(itemName);
+        } else if (fallbackIndex === 3) {
+          // Then try Foodish API for guaranteed food images
+          imageUri = getFoodishImageUri(itemName);
+        } else {
+          // Then try fallback sources
+          imageUri = getItemImageUriFallback(itemName, fallbackIndex - 4);
+        }
+        
+        setCurrentImageUri(imageUri);
+      } catch (error) {
+        setImageError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadImage();
+  }, [itemName, fallbackIndex]);
 
   const handleError = () => {
-    if (fallbackIndex < 8) {
-      // Try next fallback (Foodish + LoremFlickr + 6 fallbacks)
+    if (fallbackIndex < 9) {
+      // Try next fallback (Unsplash sync + Unsplash async + LoremFlickr + Foodish + 6 fallbacks)
       setFallbackIndex(prev => prev + 1);
     } else {
       // All fallbacks failed
@@ -28,22 +72,7 @@ export default function RobustImage({
     }
   };
 
-  const getImageUri = () => {
-    if (imageError) return null;
-    if (fallbackIndex === 0) {
-      // Try Foodish API first for guaranteed food images
-      return getFoodishImageUri(itemName);
-    } else if (fallbackIndex === 1) {
-      // Then try LoremFlickr with food tags
-      return getItemImageUri(itemName);
-    }
-    // Then try fallback sources
-    return getItemImageUriFallback(itemName, fallbackIndex - 2);
-  };
-
-  const imageUri = getImageUri();
-
-  if (imageError || !imageUri) {
+  if (imageError || (!isLoading && !currentImageUri)) {
     return (
       <View style={[styles.fallbackContainer, style]}>
         <Text style={styles.fallbackText}>
@@ -53,9 +82,17 @@ export default function RobustImage({
     );
   }
 
+  if (isLoading) {
+    return (
+      <View style={[styles.fallbackContainer, style]}>
+        <Text style={styles.fallbackText}>...</Text>
+      </View>
+    );
+  }
+
   return (
     <Image
-      source={{ uri: imageUri }}
+      source={{ uri: currentImageUri! }}
       style={style}
       onError={handleError}
       {...props}

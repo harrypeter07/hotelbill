@@ -1,6 +1,8 @@
 // Returns a deterministic image URL for a given dish name.
 // Use food-specific image services to ensure we get actual food images.
 
+import { UNSPLASH_CONFIG, hasValidApiKey } from './unsplash-config';
+
 function stableNumberFromString(input: string): number {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
@@ -45,6 +47,69 @@ export function getFoodishImageUri(name: string): string {
   
   // Foodish API provides random food images - use seed for consistency
   return `https://foodish-api.herokuapp.com/images/food/${seed % 10}.jpg`;
+}
+
+// Use Unsplash API with exact food name for high-quality food images
+export async function getUnsplashFoodUri(name: string): Promise<string> {
+  const cleanName = (name || 'food').toLowerCase().trim();
+  const seed = stableNumberFromString(cleanName);
+  
+  // Check if we have a valid API key
+  if (!hasValidApiKey()) {
+    throw new Error('No valid Unsplash API key');
+  }
+  
+  try {
+    // Use Unsplash API search with exact food name and food-related keywords
+    const query = encodeURIComponent(`${cleanName} food meal dish restaurant cooking`);
+    const page = (seed % 3) + 1; // Use different pages for variety
+    
+    const params = new URLSearchParams({
+      query,
+      page: page.toString(),
+      per_page: UNSPLASH_CONFIG.DEFAULT_PARAMS.per_page.toString(),
+      orientation: UNSPLASH_CONFIG.DEFAULT_PARAMS.orientation,
+      order_by: UNSPLASH_CONFIG.DEFAULT_PARAMS.order_by,
+      content_filter: UNSPLASH_CONFIG.DEFAULT_PARAMS.content_filter
+    });
+    
+    const apiUrl = `${UNSPLASH_CONFIG.SEARCH_PHOTOS}?${params}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Client-ID ${UNSPLASH_CONFIG.ACCESS_KEY}`,
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Unsplash API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.results && data.results.length > 0) {
+      // Use the seed to pick a consistent image from results
+      const imageIndex = seed % data.results.length;
+      const selectedImage = data.results[imageIndex];
+      
+      // Return the small image URL (200x200)
+      return selectedImage.urls.small || selectedImage.urls.thumb;
+    }
+    
+    throw new Error('No images found');
+  } catch (error) {
+    // Fallback to the sync method if API fails
+    return getUnsplashFoodUriSync(name);
+  }
+}
+
+// Synchronous fallback for Unsplash (without API key)
+export function getUnsplashFoodUriSync(name: string): string {
+  const cleanName = (name || 'food').toLowerCase().trim();
+  const seed = stableNumberFromString(cleanName);
+  
+  // Use Unsplash source without API key (limited but works)
+  return `https://source.unsplash.com/200x200/?${encodeURIComponent(cleanName + ' food meal dish')}&sig=${seed}`;
 }
 
 // Fallback image sources - all food-specific with exact food name
