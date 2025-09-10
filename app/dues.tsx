@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator, RefreshControl, Modal, Image, ScrollView } from 'react-native';
+import { COLORS } from '@/lib/theme';
 import RobustImage from '@/components/RobustImage';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
@@ -556,29 +557,29 @@ export default function DuesDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: COLORS.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: COLORS.textPrimary,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   summaryContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
@@ -597,22 +598,22 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     marginBottom: 4,
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     fontWeight: '500',
     textAlign: 'center',
   },
   summaryDivider: {
     width: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: COLORS.border,
     marginHorizontal: 16,
   },
   controlsContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
@@ -627,14 +628,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchInput: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.muted,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: COLORS.border,
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1f2937',
+    color: COLORS.textPrimary,
   },
   sortContainer: {
     flexDirection: 'row',
@@ -644,7 +645,7 @@ const styles = StyleSheet.create({
   sortLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6b7280',
+    color: COLORS.textSecondary,
   },
   sortButtons: {
     flexDirection: 'row',
@@ -652,45 +653,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sortButton: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: COLORS.muted,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: COLORS.border,
   },
   sortButtonActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: COLORS.border,
+    borderColor: COLORS.border,
   },
   sortButtonText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#64748b',
+    color: COLORS.textSecondary,
   },
   sortButtonTextActive: {
-    color: '#ffffff',
+    color: COLORS.textPrimary,
   },
   orderButton: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.muted,
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: COLORS.border,
   },
   orderButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4b5563',
+    color: COLORS.textSecondary,
   },
   listContainer: {
     padding: 16,
   },
   dueCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -720,10 +721,10 @@ const styles = StyleSheet.create({
   },
   urgentCard: {
     borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
+    borderLeftColor: COLORS.danger,
   },
   urgentBadge: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#7f1d1d',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -732,7 +733,7 @@ const styles = StyleSheet.create({
   },
   urgentText: {
     fontSize: 12,
-    color: '#dc2626',
+    color: COLORS.textPrimary,
     fontWeight: '600',
   },
   cardHeader: {
@@ -747,12 +748,12 @@ const styles = StyleSheet.create({
   customerName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     marginBottom: 4,
   },
   customerPhone: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   amountContainer: {
@@ -761,7 +762,7 @@ const styles = StyleSheet.create({
   amountValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#ef4444',
+    color: COLORS.accent,
   },
   cardDetails: {
     marginBottom: 16,
@@ -774,12 +775,12 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: 14,
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     fontWeight: '600',
   },
   cardActions: {
@@ -788,7 +789,7 @@ const styles = StyleSheet.create({
   },
   payButton: {
     flex: 1,
-    backgroundColor: '#16a34a',
+    backgroundColor: COLORS.success,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -801,17 +802,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   callButton: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.muted,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   callButtonText: {
-    color: '#4b5563',
+    color: COLORS.textPrimary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -836,19 +837,19 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     marginBottom: 8,
   },
   emptyMessage: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.surface,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -857,24 +858,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: COLORS.border,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: COLORS.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeButtonText: {
     fontSize: 18,
-    color: '#6b7280',
+    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   modalContent: {
@@ -887,7 +888,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: COLORS.textPrimary,
     marginBottom: 12,
   },
   itemRow: {
@@ -934,17 +935,17 @@ const styles = StyleSheet.create({
   // Table styles
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.muted,
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: COLORS.border,
     marginBottom: 8,
   },
   tableHeaderText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#374151',
+    color: COLORS.textPrimary,
     textAlign: 'center',
     flex: 1,
   },
@@ -954,7 +955,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: COLORS.border,
   },
   itemCell: {
     flex: 3,
