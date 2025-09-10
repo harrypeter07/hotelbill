@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
+import { COLORS } from '@/lib/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +18,7 @@ export default function NavBar({ title }: { title: string }) {
         <View style={styles.left}>
           {navigation.canGoBack?.() ? (
             <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={20} color="#111827" />
+              <Ionicons name="arrow-back" size={20} color={COLORS.textPrimary} />
             </Pressable>
           ) : null}
           <Text style={styles.title}>{title}</Text>
@@ -29,7 +30,7 @@ export default function NavBar({ title }: { title: string }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { backgroundColor: 'white' },
+  safe: { backgroundColor: COLORS.surface },
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -37,17 +38,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: 'white',
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
     ...Platform.select({
       android: { elevation: 2 },
       ios: { shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 4 } },
     }),
   },
-  title: { fontSize: 18, fontWeight: '700' },
-  time: { fontVariant: ['tabular-nums'] },
+  title: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary },
+  time: { fontVariant: ['tabular-nums'], color: COLORS.textSecondary },
   left: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  backBtn: { padding: 6, borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: 'white' },
+  backBtn: { padding: 6, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.muted },
 });
 
 
