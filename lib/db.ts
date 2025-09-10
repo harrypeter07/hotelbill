@@ -23,6 +23,7 @@ export async function getDb(): Promise<Database> {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       price REAL NOT NULL,
+      half_price REAL,
       category TEXT
     );
     CREATE TABLE IF NOT EXISTS orders (

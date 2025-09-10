@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, RefreshControl, Alert } from 'react-native';
 import { useState } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
@@ -91,6 +91,62 @@ export default function Manage() {
     setEditTableId(table.id);
   };
 
+  const handleDeleteItem = (item: CatalogItem) => {
+    Alert.alert(
+      'Delete Item',
+      `Are you sure you want to delete "${item.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('Deleting item:', item.id, item.name);
+              await removeItem(item.id);
+              console.log('Item deleted successfully');
+              // Clear form if editing this item
+              if (editItemId === item.id) {
+                clearItemForm();
+              }
+            } catch (error) {
+              console.error('Delete item error:', error);
+              Alert.alert('Error', `Failed to delete item: ${error.message || 'Unknown error'}`);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteTable = (table: TableInfo) => {
+    Alert.alert(
+      'Delete Table',
+      `Are you sure you want to delete table "${table.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('Deleting table:', table.id, table.name);
+              await removeTable(table.id);
+              console.log('Table deleted successfully');
+              // Clear form if editing this table
+              if (editTableId === table.id) {
+                clearTableForm();
+              }
+            } catch (error) {
+              console.error('Delete table error:', error);
+              Alert.alert('Error', `Failed to delete table: ${error.message || 'Unknown error'}`);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const hydrated = useCatalogStore((s) => s.hydrated);
   const hydrate = useCatalogStore((s) => s.hydrate);
   const [refreshing, setRefreshing] = useState(false);
@@ -173,7 +229,7 @@ export default function Manage() {
                       </Pressable>
                       <Pressable
                         style={styles.deleteButton}
-                        onPress={() => removeTable(item.id)}
+                        onPress={() => handleDeleteTable(item)}
                       >
                         <Text style={styles.deleteButtonText}>Delete</Text>
                       </Pressable>
@@ -287,7 +343,7 @@ export default function Manage() {
                       </Pressable>
                       <Pressable
                         style={styles.deleteButton}
-                        onPress={() => removeItem(item.id)}
+                        onPress={() => handleDeleteItem(item)}
                       >
                         <Text style={styles.deleteButtonText}>Delete</Text>
                       </Pressable>

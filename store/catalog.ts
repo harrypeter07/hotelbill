@@ -85,9 +85,18 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }),
   removeTable: (id) =>
     set(async (s) => {
-      const db = await getDb();
-      await db.runAsync('DELETE FROM tables WHERE id = ?', [id]);
-      return { tables: s.tables.filter((t) => t.id !== id) } as CatalogState;
+      try {
+        console.log('Catalog store: Removing table with id:', id);
+        const db = await getDb();
+        const result = await db.runAsync('DELETE FROM tables WHERE id = ?', [id]);
+        console.log('Database delete result:', result);
+        const newTables = s.tables.filter((t) => t.id !== id);
+        console.log('New tables array length:', newTables.length);
+        return { tables: newTables } as CatalogState;
+      } catch (error) {
+        console.error('Error in removeTable:', error);
+        throw error;
+      }
     }),
   addOrUpdateItem: (item) =>
     set(async (s) => {
@@ -105,9 +114,18 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }),
   removeItem: (id) =>
     set(async (s) => {
-      const db = await getDb();
-      await db.runAsync('DELETE FROM items WHERE id = ?', [id]);
-      return { items: s.items.filter((t) => t.id !== id) } as CatalogState;
+      try {
+        console.log('Catalog store: Removing item with id:', id);
+        const db = await getDb();
+        const result = await db.runAsync('DELETE FROM items WHERE id = ?', [id]);
+        console.log('Database delete result:', result);
+        const newItems = s.items.filter((t) => t.id !== id);
+        console.log('New items array length:', newItems.length);
+        return { items: newItems } as CatalogState;
+      } catch (error) {
+        console.error('Error in removeItem:', error);
+        throw error;
+      }
     }),
 }));
 
