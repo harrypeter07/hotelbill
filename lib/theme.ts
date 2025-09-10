@@ -1,16 +1,15 @@
 export const COLORS = {
-  // Teal-focused contrast theme
-  background: '#0f766e', // teal-700
-  surface: '#0b3f3a', // deep teal surface
-  card: '#0b3f3a',
-  border: '#14b8a6', // teal-500
-  accent: '#2dd4bf', // teal-400
-  textPrimary: '#ecfeff', // light cyan text
-  textSecondary: '#ccfbf1',
+  // Light gradient theme
+  background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', // soft light gradient
+  surface: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', // subtle white gradient for cells
+  card: '#ffffff', // flat white for consistency
+  border: '#334155', // dark slate border
+  accent: '#14b8a6', // teal accent
+  textPrimary: '#0f172a', // dark navy text
+  textSecondary: '#475569', // muted gray text
   success: '#10b981',
   danger: '#ef4444',
-  muted: '#115e59', // teal-700 muted
+  muted: '#e2e8f0', // light gray muted
 };
 
 export type Theme = typeof COLORS;
-

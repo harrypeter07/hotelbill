@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "hotel-waiter",
+    "name": "bill-buddy-2",
     "slug": "hotel-waiter",
     "scheme": "hotelwaiter",
     "version": "1.0.0",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0f766e"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -37,7 +37,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#111827"
+        "backgroundColor": "#0f766e"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.billbuddy.hotelwaiter",
