@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, Alert, ActivityIndicator, RefreshControl, Modal, Image, ScrollView } from 'react-native';
+import RobustImage from '@/components/RobustImage';
 import NavBar from '@/components/NavBar';
 import { useDuesStore } from '@/store/dues';
 import React, { useMemo, useState } from 'react';
@@ -168,29 +169,21 @@ const BillDetailModal = ({
               
               {/* Table Rows */}
               {bill.items.map((item: any, index: number) => {
-                const imageUri = item.photoUri || `https://source.unsplash.com/100x100/?${encodeURIComponent(item.name)} indian cooked food`;
-                console.log('🍽️ Rendering due item:', item.name, 'with image:', imageUri);
                 return (
                   <View key={`${item.name}-${index}`} style={styles.tableRow}>
                     <View style={styles.itemCell}>
                       <View style={styles.itemImageContainer}>
-                        <Image 
-                          source={{ uri: imageUri }} 
+                        <RobustImage
+                          itemName={item.name}
                           style={styles.itemImage}
-                          resizeMode="cover"
-                          onError={(error) => {
-                            console.log('❌ Image load error for due item', item.name, ':', error.nativeEvent.error);
-                          }}
-                          onLoad={() => {
-                            console.log('✅ Image loaded successfully for due item', item.name);
-                          }}
+                          fallbackText={item.name?.charAt(0)?.toUpperCase?.() || '?'}
                         />
                       </View>
                       <Text style={styles.itemName}>{item.name}</Text>
                     </View>
                     <Text style={styles.quantityCell}>{item.quantity}</Text>
-                    <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
-                    <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+                    <Text style={styles.priceCell}>₹{Number(item.price).toFixed(2)}</Text>
+                    <Text style={styles.totalCell}>₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}</Text>
                   </View>
                 );
               })}
