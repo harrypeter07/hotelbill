@@ -314,6 +314,126 @@ export default function History() {
   );
 }
 
+// Order Detail Modal Component
+const OrderDetailModal = ({ 
+  visible, 
+  order, 
+  onClose 
+}: { 
+  visible: boolean; 
+  order: HistoryRow | null; 
+  onClose: () => void; 
+}) => {
+  if (!order) return null;
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Mock items data - in real app this would come from the order
+  const mockItems = [
+    { name: 'Chicken Curry', quantity: 2, price: 180, photoUri: 'https://source.unsplash.com/100x100/?chicken curry indian cooked food' },
+    { name: 'Naan Bread', quantity: 4, price: 15, photoUri: 'https://source.unsplash.com/100x100/?naan bread indian cooked food' },
+    { name: 'Dal Tadka', quantity: 1, price: 60, photoUri: 'https://source.unsplash.com/100x100/?dal tadka indian cooked food' },
+  ];
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Order Details</Text>
+          <Pressable onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </Pressable>
+        </View>
+        
+        <ScrollView style={styles.modalContent}>
+          {/* Order Info */}
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}>Order Information</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Order ID:</Text>
+              <Text style={styles.detailValue}>#{order.id.slice(-8).toUpperCase()}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Table:</Text>
+              <Text style={styles.detailValue}>{order.table}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Status:</Text>
+              <StatusBadge status={order.status} />
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date:</Text>
+              <Text style={styles.detailValue}>{formatDate(order.date)}</Text>
+            </View>
+          </View>
+
+          {/* Order Items */}
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}>Order Items</Text>
+            
+            {/* Table Header */}
+            <View style={styles.tableHeader}>
+              <Text style={styles.tableHeaderText}>Item</Text>
+              <Text style={styles.tableHeaderText}>Qty</Text>
+              <Text style={styles.tableHeaderText}>Price</Text>
+              <Text style={styles.tableHeaderText}>Total</Text>
+            </View>
+            
+            {/* Table Rows */}
+            {mockItems.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <View style={styles.itemCell}>
+                  <View style={styles.itemImageContainer}>
+                    <Image 
+                      source={{ uri: item.photoUri }} 
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <Text style={styles.itemName}>{item.name}</Text>
+                </View>
+                <Text style={styles.quantityCell}>{item.quantity}</Text>
+                <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
+                <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Order Summary */}
+          <View style={styles.detailSection}>
+            <Text style={styles.sectionTitle}>Order Summary</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Subtotal:</Text>
+              <Text style={styles.detailValue}>₹{(order.total * 0.9).toFixed(2)}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Tax (10%):</Text>
+              <Text style={styles.detailValue}>₹{(order.total * 0.1).toFixed(2)}</Text>
+            </View>
+            <View style={[styles.detailRow, styles.totalRow]}>
+              <Text style={styles.totalLabel}>Total:</Text>
+              <Text style={styles.totalValue}>₹{order.total.toFixed(2)}</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
