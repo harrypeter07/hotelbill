@@ -639,6 +639,24 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  cardContent: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  cardInfo: {
+    flex: 1,
+  },
   urgentCard: {
     borderLeftWidth: 4,
     borderLeftColor: '#ef4444',
