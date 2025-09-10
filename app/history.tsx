@@ -236,74 +236,71 @@ export default function History() {
   return (
     <View style={styles.container}>
       <NavBar title="History" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Order & Sales History</Text>
-          {rows.length > 0 && (
-            <Text style={styles.headerSubtitle}>
-              {filteredData.length} of {rows.length} orders
-            </Text>
-          )}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563eb"]} tintColor="#2563eb" />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Order & Sales History</Text>
+            {rows.length > 0 && (
+              <Text style={styles.headerSubtitle}>
+                {filteredData.length} of {rows.length} orders
+              </Text>
+            )}
+          </View>
         </View>
-      </View>
 
-      {rows.length > 0 && (
-        <>
-          {/* Summary Stats */}
-          <SummaryStats data={rows} />
+        {rows.length > 0 && (
+          <>
+            {/* Summary Stats */}
+            <SummaryStats data={rows} />
 
-          {/* Search and Filters */}
-          <View style={styles.filtersSection}>
-            <View style={styles.searchContainer}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search by table or order ID..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor="#9ca3af"
-              />
-            </View>
-            
-            <View style={styles.filterChipsContainer}>
-      <FlatList
-                data={statusOptions}
-                keyExtractor={(s) => s}
-                horizontal
-                renderItem={({ item: status }) => (
+            {/* Search and Filters */}
+            <View style={styles.filtersSection}>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search by table or order ID..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+              
+              <View style={styles.filterChipsContainer}>
+                {statusOptions.map((status) => (
                   <FilterChip
+                    key={status}
                     label={status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
                     isActive={statusFilter === status}
                     onPress={() => setStatusFilter(status)}
                   />
-                )}
-                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-                showsHorizontalScrollIndicator={false}
-              />
+                ))}
+              </View>
             </View>
-          </View>
-        </>
-      )}
+          </>
+        )}
 
-      {/* Orders List */}
-      {filteredData.length > 0 ? (
-        <FlatList
-          data={filteredData}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => <HistoryCard item={item} index={index} onViewOrder={handleViewOrder} />}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563eb"]} tintColor="#2563eb" />}
-        />
-      ) : (
-        <EmptyState
-          message={searchQuery || statusFilter !== 'all' 
-            ? "No orders match your search criteria" 
-            : "No orders have been placed yet"}
-          onRetry={() => loadData()}
-        />
-      )}
+        {/* Orders List */}
+        {filteredData.length > 0 ? (
+          <View style={styles.listContainer}>
+            {filteredData.map((item, index) => (
+              <HistoryCard key={item.id} item={item} index={index} onViewOrder={handleViewOrder} />
+            ))}
+          </View>
+        ) : (
+          <EmptyState
+            message={searchQuery || statusFilter !== 'all' 
+              ? "No orders match your search criteria" 
+              : "No orders have been placed yet"}
+            onRetry={() => loadData()}
+          />
+        )}
+      </ScrollView>
 
       {/* Order Detail Modal */}
       <OrderDetailModal
