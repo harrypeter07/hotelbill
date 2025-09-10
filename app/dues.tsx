@@ -427,14 +427,32 @@ export default function DuesDashboard() {
   };
 
   const handleViewDetails = async (due: Due) => {
+    console.log('🔍 Opening due details for:', due);
+    console.log('📊 Due data structure:', JSON.stringify(due, null, 2));
+    
     try {
       // Load detailed bill information
+      console.log('📚 Loading history data...');
       const history = await loadHistory();
+      console.log('📚 History data loaded:', history.length, 'entries');
+      console.log('📚 History sample:', history.slice(0, 2));
+      
       const bill = history.find(h => h.id === due.id);
-      setSelectedBill(bill || due);
+      console.log('🔍 Looking for bill with ID:', due.id);
+      console.log('🔍 Found bill:', bill ? 'YES' : 'NO');
+      
+      if (bill) {
+        console.log('✅ Using detailed bill data:', JSON.stringify(bill, null, 2));
+        setSelectedBill(bill);
+      } else {
+        console.log('⚠️ No detailed bill found, using due data:', JSON.stringify(due, null, 2));
+        setSelectedBill(due);
+      }
       setShowBillModal(true);
     } catch (error) {
+      console.error('❌ Error loading history:', error);
       // Fallback to basic due info
+      console.log('🔄 Fallback to due data:', JSON.stringify(due, null, 2));
       setSelectedBill(due);
       setShowBillModal(true);
     }
