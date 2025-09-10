@@ -470,6 +470,7 @@ export default function DuesDashboard() {
             <DueCard
               item={item}
               onMarkPaid={handleMarkPaid}
+              onViewDetails={handleViewDetails}
               loading={loadingId === item.id}
             />
           )}
