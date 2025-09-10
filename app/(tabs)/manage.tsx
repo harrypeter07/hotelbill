@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, RefreshControl, Alert, Modal, Image } from 'react-native';
 import { useState } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
@@ -20,6 +20,8 @@ export default function Manage() {
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const [editTableId, setEditTableId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
   // search removed per requirements; list will show all items
 
   const clearItemForm = () => {
@@ -111,7 +113,7 @@ export default function Manage() {
               }
             } catch (error) {
               console.error('Delete item error:', error);
-              Alert.alert('Error', `Failed to delete item: ${error.message || 'Unknown error'}`);
+              Alert.alert('Error', `Failed to delete item: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           }
         }
@@ -139,7 +141,7 @@ export default function Manage() {
               }
             } catch (error) {
               console.error('Delete table error:', error);
-              Alert.alert('Error', `Failed to delete table: ${error.message || 'Unknown error'}`);
+              Alert.alert('Error', `Failed to delete table: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           }
         }
@@ -157,6 +159,16 @@ export default function Manage() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleViewItem = (item: CatalogItem) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
+  };
+
+  const closeItemModal = () => {
+    setShowItemModal(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -318,7 +330,10 @@ export default function Manage() {
                 data={items}
                 keyExtractor={(i) => i.id}
                 renderItem={({ item }) => (
-                  <View style={styles.itemCard}>
+                  <Pressable 
+                    style={styles.itemCard}
+                    onPress={() => handleViewItem(item)}
+                  >
                     <View style={styles.itemCardContent}>
                       <RobustImage
                         itemName={item.name}
@@ -348,7 +363,7 @@ export default function Manage() {
                         <Text style={styles.deleteButtonText}>Delete</Text>
                       </Pressable>
                     </View>
-                  </View>
+                  </Pressable>
                 )}
                 scrollEnabled={false}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -357,9 +372,132 @@ export default function Manage() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Item Detail Modal */}
+      <ItemDetailModal
+        visible={showItemModal}
+        item={selectedItem}
+        onClose={closeItemModal}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
+      />
     </View>
   );
 }
+
+// Item Detail Modal Component
+const ItemDetailModal = ({ 
+  visible, 
+  item, 
+  onClose, 
+  onEdit, 
+  onDelete 
+}: { 
+  visible: boolean; 
+  item: CatalogItem | null; 
+  onClose: () => void; 
+  onEdit: (item: CatalogItem) => void;
+  onDelete: (item: CatalogItem) => void;
+}) => {
+  if (!item) return null;
+
+  const formatDate = (id: string) => {
+    // Extract timestamp from ID if it's a timestamp-based ID
+    const timestamp = parseInt(id);
+    if (!isNaN(timestamp) && timestamp > 1000000000000) {
+      return new Date(timestamp).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    return 'Recently added';
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Item Details</Text>
+          <Pressable onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </Pressable>
+        </View>
+        
+        <ScrollView style={styles.modalContent}>
+          {/* Food Image */}
+          <View style={styles.modalImageContainer}>
+            <RobustImage
+              itemName={item.name}
+              style={styles.modalImage}
+              fallbackText={item.name.charAt(0).toUpperCase()}
+            />
+          </View>
+
+          {/* Item Information */}
+          <View style={styles.modalInfoSection}>
+            <Text style={styles.modalItemName}>{item.name}</Text>
+            
+            <View style={styles.modalPriceContainer}>
+              <View style={styles.modalPriceRow}>
+                <Text style={styles.modalPriceLabel}>Full Price:</Text>
+                <Text style={styles.modalPriceValue}>₹{item.price}</Text>
+              </View>
+              {item.half_price != null && (
+                <View style={styles.modalPriceRow}>
+                  <Text style={styles.modalPriceLabel}>Half Price:</Text>
+                  <Text style={styles.modalPriceValue}>₹{item.half_price}</Text>
+                </View>
+              )}
+            </View>
+
+            {item.category && (
+              <View style={styles.modalCategoryContainer}>
+                <Text style={styles.modalCategoryLabel}>Category:</Text>
+                <Text style={styles.modalCategoryValue}>{item.category}</Text>
+              </View>
+            )}
+
+            <View style={styles.modalMetaContainer}>
+              <Text style={styles.modalMetaLabel}>Item ID:</Text>
+              <Text style={styles.modalMetaValue}>{item.id.slice(-8)}</Text>
+            </View>
+
+            <View style={styles.modalMetaContainer}>
+              <Text style={styles.modalMetaLabel}>Added:</Text>
+              <Text style={styles.modalMetaValue}>{formatDate(item.id)}</Text>
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.modalActions}>
+            <Pressable 
+              style={styles.modalEditButton} 
+              onPress={() => {
+                onEdit(item);
+                onClose();
+              }}
+            >
+              <Text style={styles.modalEditButtonText}>Edit Item</Text>
+            </Pressable>
+            
+            <Pressable 
+              style={styles.modalDeleteButton} 
+              onPress={() => {
+                onDelete(item);
+                onClose();
+              }}
+            >
+              <Text style={styles.modalDeleteButtonText}>Delete Item</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -634,5 +772,163 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0369a1',
     letterSpacing: 0.2,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  modalContent: {
+    flex: 1,
+    padding: 20,
+  },
+  modalImageContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  modalInfoSection: {
+    marginBottom: 24,
+  },
+  modalItemName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#0f172a',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalPriceContainer: {
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 16,
+  },
+  modalPriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalPriceLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  modalPriceValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  modalCategoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalCategoryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginRight: 8,
+  },
+  modalCategoryValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0369a1',
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  modalMetaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalMetaLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginRight: 8,
+    minWidth: 80,
+  },
+  modalMetaValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  modalEditButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+  },
+  modalEditButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  modalDeleteButton: {
+    flex: 1,
+    backgroundColor: '#fef2f2',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    alignItems: 'center',
+  },
+  modalDeleteButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#dc2626',
   },
 });
