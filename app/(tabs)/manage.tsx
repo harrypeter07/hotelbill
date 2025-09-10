@@ -2,8 +2,7 @@ import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ScrollView, Ref
 import { useState } from 'react';
 import { useCatalogStore, CatalogItem, TableInfo } from '@/store/catalog';
 import NavBar from '@/components/NavBar';
-import { getItemImageUri } from '@/lib/images';
-import { Image } from 'react-native';
+import RobustImage from '@/components/RobustImage';
 
 export default function Manage() {
   const tables = useCatalogStore((s) => s.tables);
@@ -265,9 +264,10 @@ export default function Manage() {
                 renderItem={({ item }) => (
                   <View style={styles.itemCard}>
                     <View style={styles.itemCardContent}>
-                      <Image
-                        source={{ uri: getItemImageUri(item.name) }}
+                      <RobustImage
+                        itemName={item.name}
                         style={styles.itemImage}
+                        fallbackText={item.name.charAt(0).toUpperCase()}
                       />
                       <View style={styles.itemDetails}>
                         <Text style={styles.itemName}>{item.name}</Text>

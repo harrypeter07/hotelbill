@@ -1,10 +1,9 @@
 import { useLocalSearchParams, router } from 'expo-router';
-import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, ImageBackground } from 'react-native';
 import { useMemo } from 'react';
 import { useOrderStore, MenuItem } from '@/store/order';
 import { useCatalogStore } from '@/store/catalog';
-import { ImageBackground } from 'react-native';
-import { getItemImageUri } from '@/lib/images';
+import RobustImage from '@/components/RobustImage';
 import NavBar from '@/components/NavBar';
 
 const palette = ['#fde68a','#bbf7d0','#bfdbfe','#fca5a5','#ddd6fe','#a7f3d0','#fecdd3','#d1fae5','#e9d5ff','#fee2e2'];
@@ -47,34 +46,41 @@ export default function TableOrder() {
           const qty = qtyById[item.id] || 0;
           return (
             <View style={[styles.card, { borderColor: '#d1d5db', borderWidth: 1, borderRadius: 12 }]}> 
-              <ImageBackground source={{ uri: getItemImageUri(item.name) }} imageStyle={{ borderRadius: 12, opacity: 0.2 }} style={[styles.bg, { backgroundColor: item.color }]}>
-                <View style={styles.topRow}>
-                  <Text style={styles.cardTitle}>{item.name}</Text>
-                  <View style={styles.qtyBadge}><Text style={styles.qtyBadgeText}>{qty}</Text></View>
+              <View style={[styles.bg, { backgroundColor: item.color, position: 'relative' }]}>
+                <RobustImage
+                  itemName={item.name}
+                  style={[styles.backgroundImage, { borderRadius: 12, opacity: 0.2 }]}
+                  showFallbackText={false}
+                />
+                <View style={styles.contentOverlay}>
+                  <View style={styles.topRow}>
+                    <Text style={styles.cardTitle}>{item.name}</Text>
+                    <View style={styles.qtyBadge}><Text style={styles.qtyBadgeText}>{qty}</Text></View>
+                  </View>
+                  <Text style={styles.price}>₹{item.price}</Text>
+                  <View style={styles.splitRow}>
+                    <Pressable
+                      style={[styles.splitHalf, styles.splitLeft]}
+                      onPress={() => {
+                        const halfItem = { ...item };
+                        // If a custom half price is set in catalog, we emulate by adjusting quantity by half of price ratio relative to full.
+                        const cat = useCatalogStore.getState().items.find((i) => i.id === item.id);
+                        const delta = 0.5; // quantity unit remains 0.5
+                        // Price is stored on item; our OrderLine stores per-unit price. To respect half_price, we keep quantity math but ensure price is full; totals already multiply price*quantity, so 0.5 quantity gives half total. If explicit half_price exists and differs, a more advanced model would store variants.
+                        useOrderStore.getState().addQuantity(tableId, halfItem, delta);
+                      }}
+                    >
+                      <Text style={styles.splitText}>Half</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.splitHalf, styles.splitRight]}
+                      onPress={() => useOrderStore.getState().addQuantity(tableId, item, 1)}
+                    >
+                      <Text style={styles.splitText}>Full</Text>
+                    </Pressable>
+                  </View>
                 </View>
-                <Text style={styles.price}>₹{item.price}</Text>
-                <View style={styles.splitRow}>
-                  <Pressable
-                    style={[styles.splitHalf, styles.splitLeft]}
-                    onPress={() => {
-                      const halfItem = { ...item };
-                      // If a custom half price is set in catalog, we emulate by adjusting quantity by half of price ratio relative to full.
-                      const cat = useCatalogStore.getState().items.find((i) => i.id === item.id);
-                      const delta = 0.5; // quantity unit remains 0.5
-                      // Price is stored on item; our OrderLine stores per-unit price. To respect half_price, we keep quantity math but ensure price is full; totals already multiply price*quantity, so 0.5 quantity gives half total. If explicit half_price exists and differs, a more advanced model would store variants.
-                      useOrderStore.getState().addQuantity(tableId, halfItem, delta);
-                    }}
-                  >
-                    <Text style={styles.splitText}>Half</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.splitHalf, styles.splitRight]}
-                    onPress={() => useOrderStore.getState().addQuantity(tableId, item, 1)}
-                  >
-                    <Text style={styles.splitText}>Full</Text>
-                  </Pressable>
-                </View>
-              </ImageBackground>
+              </View>
             </View>
           );
         }}
@@ -97,7 +103,22 @@ export default function TableOrder() {
 const styles = StyleSheet.create({
   heading: { fontSize: 20, fontWeight: '600', padding: 16 },
   card: { flex: 1, borderRadius: 12, overflow: 'hidden' },
-  bg: { flex: 1, padding: 12, height: 110, justifyContent: 'space-between' },
+  bg: { flex: 1, height: 110, justifyContent: 'space-between' },
+  backgroundImage: { 
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0,
+    width: '100%',
+    height: '100%'
+  },
+  contentOverlay: { 
+    flex: 1, 
+    padding: 12, 
+    justifyContent: 'space-between',
+    zIndex: 1
+  },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   qtyBadge: { minWidth: 26, height: 22, borderRadius: 11, backgroundColor: 'rgba(17,24,39,0.8)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   qtyBadgeText: { color: 'white', fontWeight: '700' },
