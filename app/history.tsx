@@ -401,23 +401,32 @@ const OrderDetailModal = ({
             </View>
             
             {/* Table Rows */}
-            {mockItems.map((item, index) => (
-              <View key={index} style={styles.tableRow}>
-                <View style={styles.itemCell}>
-                  <View style={styles.itemImageContainer}>
-                    <Image 
-                      source={{ uri: item.photoUri }} 
-                      style={styles.itemImage}
-                      resizeMode="cover"
-                    />
+            {mockItems.map((item, index) => {
+              console.log('🍽️ Rendering item:', item.name, 'with image:', item.photoUri);
+              return (
+                <View key={index} style={styles.tableRow}>
+                  <View style={styles.itemCell}>
+                    <View style={styles.itemImageContainer}>
+                      <Image 
+                        source={{ uri: item.photoUri }} 
+                        style={styles.itemImage}
+                        resizeMode="cover"
+                        onError={(error) => {
+                          console.log('❌ Image load error for', item.name, ':', error.nativeEvent.error);
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Image loaded successfully for', item.name);
+                        }}
+                      />
+                    </View>
+                    <Text style={styles.itemName}>{item.name}</Text>
                   </View>
-                  <Text style={styles.itemName}>{item.name}</Text>
+                  <Text style={styles.quantityCell}>{item.quantity}</Text>
+                  <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
+                  <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
                 </View>
-                <Text style={styles.quantityCell}>{item.quantity}</Text>
-                <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
-                <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
 
           {/* Order Summary */}
