@@ -347,8 +347,27 @@ const OrderDetailModal = ({
     }
   };
 
-  // TODO: fetch real items by order.order_id if needed
-  const items = [] as Array<{ name: string; quantity: number; price: number }>;
+  const [items, setItems] = React.useState<Array<{ name: string; quantity: number; price: number }>>([]);
+  const [itemsLoading, setItemsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchItems = async () => {
+      if (!order?.order_id) return;
+      try {
+        setItemsLoading(true);
+        const { loadOrderItems } = await import('@/lib/transactions');
+        const rows = await loadOrderItems(order.order_id);
+        if (isMounted) setItems(rows);
+      } catch (e) {
+        console.log('⚠️ Failed to load order items for history modal:', e);
+      } finally {
+        if (isMounted) setItemsLoading(false);
+      }
+    };
+    fetchItems();
+    return () => { isMounted = false; };
+  }, [order?.order_id]);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -395,23 +414,29 @@ const OrderDetailModal = ({
             </View>
             
             {/* Table Rows */}
-            {items.map((item, index) => (
-              <View key={`${item.name}-${index}`} style={styles.tableRow}>
-                <View style={styles.itemCell}>
-                  <View style={styles.itemImageContainer}>
-                    <RobustImage
-                      itemName={item.name}
-                      style={styles.itemImage}
-                      fallbackText={item.name?.charAt(0)?.toUpperCase?.() || '?'}
-                    />
+            {itemsLoading ? (
+              <Text style={{ textAlign: 'center', color: '#64748b' }}>Loading items...</Text>
+            ) : items.length === 0 ? (
+              <Text style={{ textAlign: 'center', color: '#64748b' }}>No items found for this order.</Text>
+            ) : (
+              items.map((item, index) => (
+                <View key={`${item.name}-${index}`} style={styles.tableRow}>
+                  <View style={styles.itemCell}>
+                    <View style={styles.itemImageContainer}>
+                      <RobustImage
+                        itemName={item.name}
+                        style={styles.itemImage}
+                        fallbackText={item.name?.charAt(0)?.toUpperCase?.() || '?'}
+                      />
+                    </View>
+                    <Text style={styles.itemName}>{item.name}</Text>
                   </View>
-                  <Text style={styles.itemName}>{item.name}</Text>
+                  <Text style={styles.quantityCell}>{item.quantity}</Text>
+                  <Text style={styles.priceCell}>₹{Number(item.price).toFixed(2)}</Text>
+                  <Text style={styles.totalCell}>₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}</Text>
                 </View>
-                <Text style={styles.quantityCell}>{item.quantity}</Text>
-                <Text style={styles.priceCell}>₹{item.price.toFixed(2)}</Text>
-                <Text style={styles.totalCell}>₹{(item.price * item.quantity).toFixed(2)}</Text>
-              </View>
-            ))}
+              ))
+            )}
           </View>
 
           {/* Order Summary */}
