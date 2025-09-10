@@ -35,8 +35,8 @@ export function getItemImageUri(name: string): string {
   const cleanName = (name || 'food').toLowerCase().trim();
   const seed = stableNumberFromString(cleanName);
   
-  // Add indian to the query for Indian food images
-  const foodTags = `${cleanName},indian,food,meal,dish,restaurant,cooking`;
+  // Add indian and cooked to the query for Indian cooked food images
+  const foodTags = `${cleanName},indian,cooked,food,meal,dish,restaurant,cooking`;
   return `https://loremflickr.com/200/200/${foodTags}?lock=${seed}`;
 }
 
@@ -118,12 +118,12 @@ export function getItemImageUriFallback(name: string, fallbackIndex: number = 0)
   const seed = stableNumberFromString(cleanName + fallbackIndex.toString());
   
   const fallbacks = [
-    `https://loremflickr.com/200/200/${cleanName},indian,food,meal?lock=${seed}`,
-    `https://loremflickr.com/200/200/${cleanName},indian,restaurant,cooking?lock=${seed}`,
-    `https://loremflickr.com/200/200/${cleanName},indian,food,delicious?lock=${seed}`,
-    `https://loremflickr.com/200/200/${cleanName},indian,meal,plate?lock=${seed}`,
-    `https://loremflickr.com/200/200/${cleanName},indian,chef,cooking?lock=${seed}`,
-    `https://loremflickr.com/200/200/${cleanName},indian,curry,spice?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,food,meal?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,restaurant,cooking?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,food,delicious?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,meal,plate?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,chef,cooking?lock=${seed}`,
+    `https://loremflickr.com/200/200/${cleanName},indian,cooked,curry,spice?lock=${seed}`,
   ];
   
   return fallbacks[fallbackIndex % fallbacks.length];
