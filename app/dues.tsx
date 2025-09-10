@@ -481,6 +481,13 @@ export default function DuesDashboard() {
       ) : (
         <EmptyState />
       )}
+
+      {/* Bill Detail Modal */}
+      <BillDetailModal
+        visible={showBillModal}
+        onClose={() => setShowBillModal(false)}
+        bill={selectedBill}
+      />
     </View>
   );
 }
