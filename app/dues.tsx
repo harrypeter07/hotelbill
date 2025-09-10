@@ -176,7 +176,7 @@ const BillDetailModal = ({
                       <View style={styles.itemImageContainer}>
                         <Image 
                           source={{ uri: imageUri }} 
-                          style={styles.tableItemImage}
+                          style={styles.itemImage}
                           resizeMode="cover"
                           onError={(error) => {
                             console.log('❌ Image load error for due item', item.name, ':', error.nativeEvent.error);
@@ -463,7 +463,17 @@ export default function DuesDashboard() {
       
       if (bill) {
         console.log('✅ Using detailed bill data:', JSON.stringify(bill, null, 2));
-        setSelectedBill(bill);
+        try {
+          // Also load order items for this bill
+          // Defer import to avoid circular deps
+          const { loadOrderItems } = await import('@/lib/transactions');
+          const items = await loadOrderItems(bill.order_id);
+          console.log('🍽️ Loaded items for bill:', items.length);
+          setSelectedBill({ ...bill, items, created_at: bill.date, table_id: bill.table });
+        } catch (e) {
+          console.log('⚠️ Could not load items for bill, proceeding without items');
+          setSelectedBill({ ...bill, created_at: bill.date, table_id: bill.table });
+        }
       } else {
         console.log('⚠️ No detailed bill found, using due data:', JSON.stringify(due, null, 2));
         setSelectedBill(due);
@@ -707,10 +717,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   itemImage: {
-    width: '100%',
-    height: '100%',
-  },
-  tableItemImage: {
     width: '100%',
     height: '100%',
   },
